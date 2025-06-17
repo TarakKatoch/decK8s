@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>decK8s</title>
+  <link rel="stylesheet" href="styles.css?v=1.2&t=20250617" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+
+<!-- Particle Background -->
+<div id="particles-js"></div>
+
+<div class="dashboard">
+  <header>
+    <h1><span style="color:#ffffff;">dec</span><span style="color:#000000;">K8s</span></h1>
+  </header>
+
+  <main>
+    <!-- System Metrics Section -->
+    <section class="top-section">
+      <h2>📊 System Metrics</h2>
+      <div class="metrics-grid">
+        <div class="metric storage-used">
+          <div class="chart-container">
+            <canvas id="storageChart"></canvas>
+            <div class="percentage-display" id="storagePercentage">--%</div>
+            <div class="usage-details">
+              <div class="usage-item">
+                <span class="usage-label">Used:</span>
+                <span class="usage-value" id="storageUsed">--</span>
+              </div>
+              <div class="usage-item">
+                <span class="usage-label">Free:</span>
+                <span class="usage-value" id="storageFree">--</span>
+              </div>
+            </div>
+            <div class="chart-label">Storage Used</div>
+          </div>
+        </div>
+        <div class="metric memory-utilization">
+          <div class="chart-container">
+            <canvas id="memoryChart"></canvas>
+            <div class="percentage-display" id="memoryPercentage">--%</div>
+            <div class="usage-details">
+              <div class="usage-item">
+                <span class="usage-label">Used:</span>
+                <span class="usage-value" id="memoryUsed">--</span>
+              </div>
+              <div class="usage-item">
+                <span class="usage-label">Free:</span>
+                <span class="usage-value" id="memoryFree">--</span>
+              </div>
+            </div>
+            <div class="chart-label">Memory Used</div>
+          </div>
+        </div>
+        <div class="metric cpu-utilization">
+          <div class="chart-container">
+            <canvas id="cpuChart"></canvas>
+            <div class="percentage-display" id="cpuPercentage">--%</div>
+            <div class="usage-details">
+              <div class="usage-item">
+                <span class="usage-label">Used:</span>
+                <span class="usage-value" id="cpuUsed">--</span>
+              </div>
+              <div class="usage-item">
+                <span class="usage-label">Free:</span>
+                <span class="usage-value" id="cpuFree">--</span>
+              </div>
+            </div>
+            <div class="chart-label">CPU Used</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="auto-refresh">
+        <input type="checkbox" id="autoRefreshToggle">
+        <label for="autoRefreshToggle">Auto-refresh every 5 seconds</label>
+      </div>
+    </section>
+
+    <!-- Kubernetes Operations Section -->
+    <section class="kubernetes-section">
+      <h2>⚙️ Kubernetes Cluster</h2>
+      
+      <!-- Namespace Selector -->
+      <div class="namespace-selector">
+        <label for="namespace-dropdown">Select Namespace:</label>
+        <select id="namespace-dropdown">
+          <option value="">Loading namespaces...</option>
+        </select>
+      </div>
+
+      <!-- Cluster Resources -->
+      <div class="resource-info">
+        <div class="deployments">
+          <span class="count">--</span>
+          <p>Deployments</p>
+        </div>
+        <div class="pods-running">
+          <span class="count">--</span>
+          <p>Pods Running</p>
+        </div>
+        <div class="services-running">
+          <span class="count">--</span>
+          <p>Services</p>
+        </div>
+      </div>
+
+      <!-- Health Check -->
+      <div class="health-check-section">
+        <button id="healthCheckButton">Run Health Check</button>
+        <div id="healthCheckResult"></div>
+      </div>
+    </section>
+
+    <!-- Security Scanning Section -->
+    <section class="security-section">
+      <h2>🛡️ Security Scanner</h2>
+      
+      <form id="scanForm">
+        <label for="imageInput">Docker Image Name:</label>
+        <input type="text" id="imageInput" name="imageInput" placeholder="e.g. nginx:latest, ubuntu:20.04">
+        <button type="submit">Scan Image</button>
+      </form>
+
+      <div class="scan-results">
+        <h3>Scan Results</h3>
+        <pre id="scanResults">{}</pre>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Particle.js Configuration -->
+<script>
+  particlesJS('particles-js', {
+    particles: {
+      number: {
+        value: 80,
+        density: {
+          enable: true,
+          value_area: 800
+        }
+      },
+      color: {
+        value: '#0071E3'
+      },
+      shape: {
+        type: 'circle',
+        stroke: {
+          width: 0,
+          color: '#000000'
+        }
+      },
+      opacity: {
+        value: 0.3,
+        random: false,
+        anim: {
+          enable: false,
+          speed: 1,
+          opacity_min: 0.1,
+          sync: false
+        }
+      },
+      size: {
+        value: 3,
+        random: true,
+        anim: {
+          enable: false,
+          speed: 40,
+          size_min: 0.1,
+          sync: false
+        }
+      },
+      line_linked: {
+        enable: true,
+        distance: 150,
+        color: '#0071E3',
+        opacity: 0.2,
+        width: 1
+      },
+      move: {
+        enable: true,
+        speed: 2,
+        direction: 'none',
+        random: false,
+        straight: false,
+        out_mode: 'out',
+        bounce: false,
+        attract: {
+          enable: false,
+          rotateX: 600,
+          rotateY: 1200
+        }
+      }
+    },
+    interactivity: {
+      detect_on: 'canvas',
+      events: {
+        onhover: {
+          enable: true,
+          mode: 'repulse'
+        },
+        onclick: {
+          enable: true,
+          mode: 'push'
+        },
+        resize: true
+      },
+      modes: {
+        grab: {
+          distance: 400,
+          line_linked: {
+            opacity: 1
+          }
+        },
+        bubble: {
+          distance: 400,
+          size: 40,
+          duration: 2,
+          opacity: 8,
+          speed: 3
+        },
+        repulse: {
+          distance: 200,
+          duration: 0.4
+        },
+        push: {
+          particles_nb: 4
+        },
+        remove: {
+          particles_nb: 2
+        }
+      }
+    },
+    retina_detect: true
+  });
+</script>
+
+</body>
+</html>
