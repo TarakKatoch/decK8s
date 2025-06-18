@@ -82,6 +82,18 @@
 - **Dark/Light Theme**: Optimized color schemes
 - **Interactive Modals**: Professional service and pod detail views
 
+### 🏗️ Cluster Metrics
+- **Cluster Version & Platform**: Shows Kubernetes version and node OS/architecture
+- **Node Statistics**: Total, Ready, and NotReady nodes
+- **Pod Statistics**: Total and Running pods across all namespaces
+- **Node Details Table**: Node name, status, architecture, OS, kubelet version, CPU/memory/pod capacity
+- **Real-time Updates**: Auto-refreshes with dashboard
+
+### 🛡️ Security Scanner (Enhanced)
+- **User-friendly Vulnerability Table**: Scan results are shown in a clear, color-coded table with severity badges (Critical, High, Medium, Low, Unknown)
+- **Key Details**: Vulnerability ID, Package, Installed Version, Fix Version, Severity, Description
+- **Export Report**: Download the full scan report as a JSON file with one click
+
 ## 📁 Project Structure
 
 ```

@@ -448,6 +448,87 @@ def get_events():
         logging.error(f"❌ Error fetching events: {str(e)}")
         return jsonify({'error': 'Failed to fetch events'}), 500
 
+# Cluster Metrics
+@app.route('/cluster_metrics', methods=['GET'])
+def get_cluster_metrics():
+    try:
+        core_v1 = client.CoreV1Api()
+        version_api = client.VersionApi()
+        
+        # Get cluster version with error handling
+        try:
+            version_info = version_api.get_code()
+            cluster_version = {
+                'major': version_info.major,
+                'minor': version_info.minor,
+                'git_version': version_info.git_version,
+                'platform': version_info.platform
+            }
+        except Exception as e:
+            logging.warning(f"⚠️ Could not fetch cluster version: {str(e)}")
+            cluster_version = {
+                'major': 'Unknown',
+                'minor': 'Unknown',
+                'git_version': 'Unknown',
+                'platform': 'Unknown'
+            }
+        
+        # Get nodes information
+        nodes = core_v1.list_node()
+        
+        # Get pods across all namespaces for resource calculation
+        all_pods = core_v1.list_pod_for_all_namespaces()
+        
+        # Calculate cluster-wide metrics
+        total_nodes = len(nodes.items)
+        ready_nodes = len([node for node in nodes.items if node.status.conditions and any(cond.type == 'Ready' and cond.status == 'True' for cond in node.status.conditions)])
+        total_pods = len(all_pods.items)
+        running_pods = len([pod for pod in all_pods.items if pod.status.phase == 'Running'])
+        
+        # Get node resource information
+        node_metrics = []
+        for node in nodes.items:
+            node_info = {
+                'name': node.metadata.name,
+                'status': 'Ready' if node.status.conditions and any(cond.type == 'Ready' and cond.status == 'True' for cond in node.status.conditions) else 'NotReady',
+                'architecture': node.status.node_info.architecture if node.status.node_info else 'Unknown',
+                'kubelet_version': node.status.node_info.kubelet_version if node.status.node_info else 'Unknown',
+                'os': node.status.node_info.operating_system if node.status.node_info else 'Unknown',
+                'capacity': {
+                    'cpu': node.status.capacity.get('cpu', 'Unknown') if node.status.capacity else 'Unknown',
+                    'memory': node.status.capacity.get('memory', 'Unknown') if node.status.capacity else 'Unknown',
+                    'pods': node.status.capacity.get('pods', 'Unknown') if node.status.capacity else 'Unknown'
+                },
+                'allocatable': {
+                    'cpu': node.status.allocatable.get('cpu', 'Unknown') if node.status.allocatable else 'Unknown',
+                    'memory': node.status.allocatable.get('memory', 'Unknown') if node.status.allocatable else 'Unknown',
+                    'pods': node.status.allocatable.get('pods', 'Unknown') if node.status.allocatable else 'Unknown'
+                }
+            }
+            node_metrics.append(node_info)
+        
+        return jsonify({
+            'cluster_version': cluster_version,
+            'nodes': {
+                'total': total_nodes,
+                'ready': ready_nodes,
+                'not_ready': total_nodes - ready_nodes
+            },
+            'pods': {
+                'total': total_pods,
+                'running': running_pods,
+                'other': total_pods - running_pods
+            },
+            'node_details': node_metrics
+        })
+        
+    except ApiException as e:
+        logging.error(f"❌ Kubernetes API error: {e.reason}")
+        return jsonify({'error': f"Kubernetes API error: {e.reason}"}), 500
+    except Exception as e:
+        logging.error(f"❌ Error fetching cluster metrics: {str(e)}")
+        return jsonify({'error': 'Failed to fetch cluster metrics'}), 500
+
 # Start the server
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=FLASK_DEBUG)

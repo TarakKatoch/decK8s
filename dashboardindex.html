@@ -27,7 +27,7 @@
   <main>
     <!-- System Metrics Section -->
     <section class="top-section">
-      <h2>📊 System Metrics</h2>
+      <h2>System Metrics</h2>
       <div class="metrics-grid">
         <div class="metric storage-used">
           <div class="chart-container">
@@ -88,9 +88,85 @@
       </div>
     </section>
 
+    <!-- Cluster Metrics Section -->
+    <section class="cluster-section">
+      <h2>Cluster Metrics</h2>
+      <div class="cluster-overview">
+        <div class="cluster-info">
+          <div class="cluster-version">
+            <h3>📋 Cluster Version</h3>
+            <div class="version-details">
+              <div class="version-item">
+                <span class="version-label">Version:</span>
+                <span class="version-value" id="clusterVersion">--</span>
+              </div>
+              <div class="version-item">
+                <span class="version-label">Platform:</span>
+                <span class="version-value" id="clusterPlatform">--</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="cluster-stats">
+            <div class="stat-card">
+              <div class="stat-icon">🖥️</div>
+              <div class="stat-content">
+                <div class="stat-number" id="totalNodes">--</div>
+                <div class="stat-label">Total Nodes</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">✅</div>
+              <div class="stat-content">
+                <div class="stat-number" id="readyNodes">--</div>
+                <div class="stat-label">Ready Nodes</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">📦</div>
+              <div class="stat-content">
+                <div class="stat-number" id="totalPods">--</div>
+                <div class="stat-label">Total Pods</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">🟢</div>
+              <div class="stat-content">
+                <div class="stat-number" id="runningPods">--</div>
+                <div class="stat-label">Running Pods</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="nodes-table-container">
+          <h3>🖥️ Node Details</h3>
+          <table class="nodes-table">
+            <thead>
+              <tr>
+                <th>Node Name</th>
+                <th>Status</th>
+                <th>Architecture</th>
+                <th>OS</th>
+                <th>Kubelet Version</th>
+                <th>CPU Capacity</th>
+                <th>Memory Capacity</th>
+                <th>Pod Capacity</th>
+              </tr>
+            </thead>
+            <tbody id="nodesTableBody">
+              <tr>
+                <td colspan="8" class="loading-row">Loading nodes...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
     <!-- Kubernetes Operations Section -->
     <section class="kubernetes-section">
-      <h2>⚙️ Kubernetes Cluster</h2>
+      <h2>Kubernetes Cluster</h2>
       
       <!-- Namespace Selector -->
       <div class="namespace-selector">
@@ -114,12 +190,6 @@
           <span class="count">--</span>
           <p>Services</p>
         </div>
-      </div>
-
-      <!-- Health Check -->
-      <div class="health-check-section">
-        <button id="healthCheckButton">Run Health Check</button>
-        <div id="healthCheckResult"></div>
       </div>
 
       <!-- Services Section -->
@@ -244,7 +314,7 @@
 
     <!-- Security Scanning Section -->
     <section class="security-section">
-      <h2>🛡️ Security Scanner</h2>
+      <h2>Security Scanner</h2>
       
       <form id="scanForm">
         <label for="imageInput">Docker Image Name:</label>
@@ -255,6 +325,8 @@
       <div class="scan-results">
         <h3>Scan Results</h3>
         <pre id="scanResults">{}</pre>
+        <div id="vulnTableContainer"></div>
+        <button id="exportReportBtn" class="refresh-btn" style="margin-top: 1rem; display: none;">Export Report</button>
       </div>
     </section>
   </main>

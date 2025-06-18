@@ -35,6 +35,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Initialize event stream functionality
         initializeEventStream();
 
+        // Initialize cluster metrics functionality
+        initializeClusterMetrics();
+
         // Initial dashboard load
         updateDashboard();
         fetchNamespaces(); // Load namespaces immediately
@@ -170,6 +173,127 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // ========== Cluster Metrics Initialization ==========
+    function initializeClusterMetrics() {
+        // Cluster metrics are fetched automatically with dashboard updates
+        console.log('🏗️ Cluster metrics initialized');
+    }
+
+    // ========== Cluster Metrics Functions ==========
+    function fetchClusterMetrics() {
+        console.log('🏗️ Fetching cluster metrics...');
+        
+        return fetch('http://127.0.0.1:5000/cluster_metrics')
+            .then(res => {
+                console.log('📡 Cluster metrics response status:', res.status);
+                return res.json();
+            })
+            .then(data => {
+                console.log('📊 Received cluster metrics data:', data);
+                if (data.error) {
+                    console.error('❌ Backend error:', data.error);
+                    showNotification('Failed to fetch cluster metrics', 'error');
+                    throw new Error(data.error);
+                } else {
+                    console.log('✅ Rendering cluster metrics:', data);
+                    renderClusterMetrics(data);
+                    renderNodesTable(data.node_details);
+                    return data;
+                }
+            })
+            .catch(err => {
+                console.error('❌ Failed to fetch cluster metrics:', err);
+                showNotification('Failed to fetch cluster metrics', 'error');
+                throw err;
+            });
+    }
+
+    function renderClusterMetrics(data) {
+        // Update cluster version with error handling
+        if (data.cluster_version && data.cluster_version.major && data.cluster_version.minor) {
+            const version = `${data.cluster_version.major}.${data.cluster_version.minor}`;
+            document.getElementById('clusterVersion').textContent = version;
+        } else {
+            document.getElementById('clusterVersion').textContent = 'Unknown';
+        }
+        
+        if (data.cluster_version && data.cluster_version.platform) {
+            document.getElementById('clusterPlatform').textContent = data.cluster_version.platform;
+        } else {
+            document.getElementById('clusterPlatform').textContent = 'Unknown';
+        }
+
+        // Update cluster stats with error handling
+        if (data.nodes) {
+            document.getElementById('totalNodes').textContent = data.nodes.total || '0';
+            document.getElementById('readyNodes').textContent = data.nodes.ready || '0';
+        } else {
+            document.getElementById('totalNodes').textContent = '0';
+            document.getElementById('readyNodes').textContent = '0';
+        }
+        
+        if (data.pods) {
+            document.getElementById('totalPods').textContent = data.pods.total || '0';
+            document.getElementById('runningPods').textContent = data.pods.running || '0';
+        } else {
+            document.getElementById('totalPods').textContent = '0';
+            document.getElementById('runningPods').textContent = '0';
+        }
+    }
+
+    function renderNodesTable(nodes) {
+        const nodesTableBody = document.getElementById('nodesTableBody');
+        
+        if (!nodes || nodes.length === 0) {
+            nodesTableBody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="no-nodes-message">
+                        No nodes found in the cluster
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        const tableRows = nodes.map(node => {
+            const statusClass = node.status.toLowerCase() === 'ready' ? 'ready' : 'not-ready';
+            const statusIcon = node.status.toLowerCase() === 'ready' ? '🟢' : '🔴';
+            
+            return `
+                <tr>
+                    <td>
+                        <span class="node-name">${node.name}</span>
+                    </td>
+                    <td>
+                        <span class="node-status ${statusClass}">
+                            ${statusIcon} ${node.status}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="node-arch">${node.architecture}</span>
+                    </td>
+                    <td>
+                        <span class="node-os">${node.os}</span>
+                    </td>
+                    <td>
+                        <span class="node-version">${node.kubelet_version}</span>
+                    </td>
+                    <td>
+                        <span class="node-capacity">${node.capacity.cpu}</span>
+                    </td>
+                    <td>
+                        <span class="node-capacity">${node.capacity.memory}</span>
+                    </td>
+                    <td>
+                        <span class="node-capacity">${node.capacity.pods}</span>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        nodesTableBody.innerHTML = tableRows;
+    }
+
     // ========== Handlers ==========
 
     function handleImageScan(event) {
@@ -286,6 +410,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateDashboard() {
         console.log('🔄 Updating dashboard...');
         fetchSystemInfo();
+        fetchClusterMetrics();
         if (isInitialized) {
             console.log('📡 Fetching namespaces and services...');
             fetchNamespaces();
@@ -442,12 +567,87 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderScanResult(result) {
+        let formatted;
         try {
-            const formatted = typeof result === 'string' ? JSON.parse(result) : result;
+            formatted = typeof result === 'string' ? JSON.parse(result) : result;
             scanResults.textContent = JSON.stringify(formatted, null, 2);
         } catch (err) {
             scanResults.textContent = result;
+            formatted = null;
         }
+
+        // Render user-friendly vulnerability table
+        renderVulnTable(formatted);
+
+        // Enable export button if there is a result
+        const exportBtn = document.getElementById('exportReportBtn');
+        if (formatted) {
+            exportBtn.style.display = 'inline-block';
+            exportBtn.onclick = function() {
+                exportScanReport(formatted);
+            };
+        } else {
+            exportBtn.style.display = 'none';
+        }
+    }
+
+    function renderVulnTable(scanData) {
+        const container = document.getElementById('vulnTableContainer');
+        if (!scanData || !Array.isArray(scanData.Results)) {
+            container.innerHTML = '<div style="color:#6B7280;">No vulnerabilities found or invalid scan data.</div>';
+            return;
+        }
+        let rows = '';
+        let foundVulns = false;
+        scanData.Results.forEach(result => {
+            if (Array.isArray(result.Vulnerabilities) && result.Vulnerabilities.length > 0) {
+                foundVulns = true;
+                result.Vulnerabilities.forEach(vuln => {
+                    const sev = (vuln.Severity || 'UNKNOWN').toLowerCase();
+                    rows += `
+                        <tr>
+                            <td>${vuln.VulnerabilityID || ''}</td>
+                            <td>${vuln.PkgName || ''}</td>
+                            <td>${vuln.InstalledVersion || ''}</td>
+                            <td>${vuln.FixedVersion || '-'}</td>
+                            <td><span class="severity-badge severity-${sev}">${vuln.Severity || 'UNKNOWN'}</span></td>
+                            <td>${vuln.Title || vuln.Description || ''}</td>
+                        </tr>
+                    `;
+                });
+            }
+        });
+        if (!foundVulns) {
+            container.innerHTML = '<div style="color:#10B981;">No vulnerabilities found! 🎉</div>';
+            return;
+        }
+        container.innerHTML = `
+            <table class="vuln-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Package</th>
+                        <th>Installed</th>
+                        <th>Fix Version</th>
+                        <th>Severity</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rows}
+                </tbody>
+            </table>
+        `;
+    }
+
+    function exportScanReport(scanData) {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(scanData, null, 2));
+        const dlAnchor = document.createElement('a');
+        dlAnchor.setAttribute('href', dataStr);
+        dlAnchor.setAttribute('download', 'trivy_scan_report.json');
+        document.body.appendChild(dlAnchor);
+        dlAnchor.click();
+        document.body.removeChild(dlAnchor);
     }
 
     // ========== Service-to-Pod Mapping Functions ==========

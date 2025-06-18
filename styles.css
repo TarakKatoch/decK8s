@@ -50,7 +50,7 @@ body {
     font-size: 1.8rem;
     font-weight: 600;
     color: #FFFFFF !important;
-    text-align: center;
+    text-align: left;
     letter-spacing: -0.5px;
     margin: 0;
 }
@@ -1464,5 +1464,319 @@ section {
   
   .event-message {
     max-width: 200px;
+  }
+}
+
+/* ===== CLUSTER METRICS SECTION ===== */
+.cluster-section {
+  margin-bottom: 2rem;
+}
+
+.cluster-overview {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.cluster-info {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.cluster-version {
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 113, 227, 0.15);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.08);
+}
+
+.cluster-version h3 {
+  margin-bottom: 1rem;
+  color: #1D1D1F;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.version-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.version-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.version-item:last-child {
+  border-bottom: none;
+}
+
+.version-label {
+  font-weight: 500;
+  color: #6E6E73;
+}
+
+.version-value {
+  font-weight: 600;
+  color: #1D1D1F;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+}
+
+.cluster-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.stat-card {
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 113, 227, 0.15);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.08);
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 113, 227, 0.15);
+  border-color: rgba(0, 113, 227, 0.25);
+}
+
+.stat-icon {
+  font-size: 2rem;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 113, 227, 0.1);
+  border-radius: 12px;
+}
+
+.stat-content {
+  flex: 1;
+}
+
+.stat-number {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #0071E3;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: #6E6E73;
+  font-weight: 500;
+}
+
+.nodes-table-container {
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 113, 227, 0.15);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.08);
+}
+
+.nodes-table-container h3 {
+  margin-bottom: 1rem;
+  color: #1D1D1F;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.nodes-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.nodes-table th {
+  background: #F9FAFB;
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 2px solid #E5E7EB;
+}
+
+.nodes-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #F3F4F6;
+  vertical-align: top;
+}
+
+.nodes-table tbody tr:hover {
+  background: #F9FAFB;
+}
+
+.nodes-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.node-name {
+  font-weight: 600;
+  color: #1F2937;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+}
+
+.node-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.node-status.ready {
+  background: #D1FAE5;
+  color: #065F46;
+}
+
+.node-status.not-ready {
+  background: #FEE2E2;
+  color: #991B1B;
+}
+
+.node-arch, .node-os, .node-version {
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  color: #6B7280;
+  font-size: 13px;
+}
+
+.node-capacity {
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Responsive Design for Cluster Metrics */
+@media (max-width: 1024px) {
+  .cluster-info {
+    grid-template-columns: 1fr;
+  }
+  
+  .cluster-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .cluster-section {
+    padding: 1rem;
+  }
+  
+  .cluster-stats {
+    grid-template-columns: 1fr;
+  }
+  
+  .nodes-table-container {
+    overflow-x: auto;
+  }
+  
+  .nodes-table {
+    font-size: 12px;
+  }
+  
+  .nodes-table th,
+  .nodes-table td {
+    padding: 8px 12px;
+  }
+}
+
+/* ===== VULNERABILITY TABLE ===== */
+#vulnTableContainer {
+  margin-top: 1.5rem;
+  overflow-x: auto;
+}
+
+.vuln-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.08);
+}
+
+.vuln-table th {
+  background: #F9FAFB;
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 2px solid #E5E7EB;
+}
+
+.vuln-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #F3F4F6;
+  vertical-align: top;
+  word-break: break-word;
+}
+
+.vuln-table tbody tr:hover {
+  background: #F9FAFB;
+}
+
+.vuln-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.severity-badge {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  text-transform: capitalize;
+  white-space: nowrap;
+  min-width: 60px;
+  text-align: center;
+}
+
+.vuln-table td:nth-child(5) {
+  white-space: nowrap;
+  min-width: 70px;
+}
+
+.severity-critical {
+  background: #EF4444;
+}
+.severity-high {
+  background: #F59E0B;
+}
+.severity-medium {
+  background: #FBBF24;
+  color: #92400E;
+}
+.severity-low {
+  background: #10B981;
+}
+.severity-unknown {
+  background: #6B7280;
+}
+
+/* Responsive for vuln table */
+@media (max-width: 768px) {
+  .vuln-table th, .vuln-table td {
+    padding: 8px 8px;
+    font-size: 12px;
   }
 }
