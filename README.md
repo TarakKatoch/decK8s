@@ -10,13 +10,14 @@
 
 ## 🎯 Project Significance
 
-**decK8s** is a comprehensive, modern Kubernetes monitoring and security dashboard that provides real-time system metrics, cluster management, container security scanning, and advanced pod health tracking. Built with a focus on user experience and security, it offers a professional-grade solution for DevOps teams, system administrators, and security professionals.
+**decK8s** is a comprehensive, modern Kubernetes monitoring and security dashboard that provides real-time system metrics, cluster management, container security scanning, advanced pod health tracking, and live event streaming. Built with a focus on user experience and security, it offers a professional-grade solution for DevOps teams, system administrators, and security professionals.
 
 ### Why decK8s?
 - **🔍 Real-time Monitoring**: Live system metrics with beautiful pie charts
 - **🛡️ Security First**: Integrated Trivy vulnerability scanning
 - **🔗 Service Discovery**: Visual service-to-pod mapping with click interactions
 - **🏥 Health Tracking**: Comprehensive pod health and restart monitoring
+- **📡 Live Events**: Real-time Kubernetes event streaming with filtering
 - **🎨 Modern UI**: Apple-inspired design with particle animations
 - **⚡ Performance**: Lightweight Flask backend with responsive frontend
 - **🔧 Easy Setup**: Simple installation and configuration
@@ -55,6 +56,16 @@
 - **Health Statistics**: Total, Healthy, and Unhealthy pod counts
 - **Action Buttons**: Details and Delete actions (extensible)
 - **Real-time Refresh**: Manual refresh with loading states
+
+### 📡 Live Event Stream
+- **Real-time Event Monitoring**: Live Kubernetes events with automatic updates
+- **Advanced Filtering**: Filter by event type (Normal/Warning) and resource kind (Pod/Deployment/ReplicaSet)
+- **Search Functionality**: Text search across event messages, reasons, and resource names
+- **Event Statistics**: Total events, warnings, and normal events counts
+- **Timestamp Display**: Formatted timestamps for event tracking
+- **Resource Details**: Event source with resource kind and name
+- **Manual Refresh**: Instant refresh button for latest events
+- **Responsive Table**: Scrollable event table with hover effects
 
 ### 🛡️ Security Scanner
 - **Trivy Integration**: Comprehensive vulnerability scanning
@@ -95,6 +106,7 @@ deck8s/
   - Trivy security scanning
   - Service-to-pod mapping API
   - Pod health and restart tracking API
+  - Live event streaming API with filtering
   - RESTful API endpoints
   - CORS support for frontend communication
 
@@ -132,6 +144,7 @@ deck8s/
   - Auto-refresh functionality
   - Service-to-pod mapping
   - Pod health tracking and filtering
+  - Live event streaming with filters and search
   - Error handling and user feedback
 
 ## 🚀 Installation
@@ -286,7 +299,14 @@ deck8s/
    - Click "Scan Image"
    - View vulnerability results
 
-5. **Test Auto-refresh**
+5. **Test Live Event Stream**
+   - Go to Live Event Stream section
+   - Use filters to view different event types and resources
+   - Try searching for specific events
+   - Click refresh button to get latest events
+   - Create/delete resources to generate new events
+
+6. **Test Auto-refresh**
    - Enable auto-refresh toggle
    - Watch metrics update every 5 seconds
 
@@ -329,6 +349,27 @@ elif status_filter.lower() == 'custom':
     pass
 ```
 
+#### Event Stream Configuration
+Modify event filtering in `systeminfo.py`:
+```python
+# Event limit (default: 100)
+limit = request.args.get('limit', '100')
+
+# Add custom resource kinds
+if resource_kind and resource_kind.lower() == 'custom':
+    # Add your custom resource kind logic
+    pass
+```
+
+#### Event Auto-refresh
+Enable automatic event updates in `app.js`:
+```javascript
+// Add to auto-refresh interval
+setInterval(() => {
+    fetchEvents(defaultNamespace);
+}, 10000); // 10 seconds
+```
+
 ## 🛠️ Troubleshooting
 
 ### Common Issues
@@ -369,6 +410,12 @@ elif status_filter.lower() == 'custom':
    - Verify namespace selection
    - Check Kubernetes API connectivity
 
+6. **Events Not Loading**
+   - Check if namespace has any events: `kubectl get events -n <namespace>`
+   - Verify Kubernetes API permissions for events
+   - Check browser console for JavaScript errors
+   - Ensure namespace is properly selected
+
 ### Performance Optimization
 
 1. **Reduce Auto-refresh Frequency**
@@ -383,6 +430,11 @@ elif status_filter.lower() == 'custom':
    - Charts update only when data changes
    - Efficient rendering with Chart.js
 
+4. **Event Stream Optimization**
+   - Limit event count to reduce API load
+   - Use filters to reduce data transfer
+   - Consider implementing event pagination for large clusters
+
 ## 📈 Future Enhancements
 
 ### Planned Features
@@ -396,6 +448,10 @@ elif status_filter.lower() == 'custom':
 - **Resource Quotas**: Namespace resource monitoring
 - **Network Policies**: Network security visualization
 - **RBAC Management**: Role and permission management
+- **Event Notifications**: Real-time alerts for critical events
+- **Event History**: Persistent event storage and analysis
+- **Event Export**: Export events to CSV/JSON format
+- **Event Correlation**: Link related events across resources
 
 ### Contributing
 1. Fork the repository

@@ -183,6 +183,63 @@
           </table>
         </div>
       </div>
+
+      <!-- Live Event Stream Section -->
+      <section class="events-section">
+        <div class="section-header">
+          <h3>📡 Live Event Stream</h3>
+          <div class="event-filters">
+            <select id="eventTypeFilter" class="event-filter">
+              <option value="all">All Types</option>
+              <option value="normal">Normal</option>
+              <option value="warning">Warning</option>
+            </select>
+            <select id="resourceKindFilter" class="event-filter">
+              <option value="all">All Resources</option>
+              <option value="pod">Pod</option>
+              <option value="deployment">Deployment</option>
+              <option value="replicaset">ReplicaSet</option>
+            </select>
+            <input type="text" id="eventSearchInput" class="event-search" placeholder="Search events...">
+            <button id="refreshEvents" class="refresh-btn">Refresh</button>
+          </div>
+        </div>
+        
+        <div class="event-stats">
+          <div class="stat-item">
+            <span class="stat-label">Total Events:</span>
+            <span class="stat-value" id="totalEvents">--</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Warnings:</span>
+            <span class="stat-value warning" id="warningEvents">--</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Normal:</span>
+            <span class="stat-value normal" id="normalEvents">--</span>
+          </div>
+        </div>
+
+        <div class="event-table-container">
+          <table class="event-table">
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Type</th>
+                <th>Resource</th>
+                <th>Reason</th>
+                <th>Message</th>
+                <th>Count</th>
+              </tr>
+            </thead>
+            <tbody id="eventTableBody">
+              <tr>
+                <td colspan="6" class="loading-row">Loading events...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
     </section>
 
     <!-- Security Scanning Section -->

@@ -366,6 +366,88 @@ def get_pod_health():
         logging.error(f"❌ Error fetching pod health: {str(e)}")
         return jsonify({'error': 'Failed to fetch pod health information'}), 500
 
+# Live Event Stream
+@app.route('/events', methods=['GET'])
+def get_events():
+    namespace = request.args.get('namespace', 'default')
+    event_type = request.args.get('type', '')  # Warning, Normal, etc.
+    resource_kind = request.args.get('kind', '')  # Pod, Service, etc.
+    search_query = request.args.get('search', '')  # Substring search
+    limit = request.args.get('limit', '100')  # Limit number of events
+    
+    try:
+        core_v1 = client.CoreV1Api()
+        events = core_v1.list_namespaced_event(namespace, limit=int(limit))
+        
+        event_data = []
+        
+        for event in events.items:
+            # Get involved object details
+            involved_object = event.involved_object
+            resource_name = involved_object.name if involved_object else 'Unknown'
+            resource_kind_type = involved_object.kind if involved_object else 'Unknown'
+            
+            # Format timestamp
+            timestamp = event.last_timestamp.isoformat() if event.last_timestamp else 'Unknown'
+            
+            # Get event type and reason
+            event_type_value = event.type if event.type else 'Unknown'
+            reason = event.reason if event.reason else 'Unknown'
+            
+            # Get message
+            message = event.message if event.message else 'No message'
+            
+            # Apply filters
+            if event_type and event_type.lower() != 'all':
+                if event_type.lower() != event_type_value.lower():
+                    continue
+            
+            if resource_kind and resource_kind.lower() != 'all':
+                if resource_kind.lower() != resource_kind_type.lower():
+                    continue
+            
+            if search_query:
+                search_lower = search_query.lower()
+                if (search_lower not in message.lower() and 
+                    search_lower not in reason.lower() and 
+                    search_lower not in resource_name.lower()):
+                    continue
+            
+            event_info = {
+                'timestamp': timestamp,
+                'type': event_type_value,
+                'reason': reason,
+                'resource_kind': resource_kind_type,
+                'resource_name': resource_name,
+                'message': message,
+                'count': event.count if event.count else 1,
+                'first_timestamp': event.first_timestamp.isoformat() if event.first_timestamp else None,
+                'last_timestamp': event.last_timestamp.isoformat() if event.last_timestamp else None
+            }
+            
+            event_data.append(event_info)
+        
+        # Sort events by timestamp (newest first)
+        event_data.sort(key=lambda x: x['timestamp'], reverse=True)
+        
+        return jsonify({
+            'namespace': namespace,
+            'events': event_data,
+            'total_events': len(event_data),
+            'filters': {
+                'type': event_type,
+                'kind': resource_kind,
+                'search': search_query
+            }
+        })
+        
+    except ApiException as e:
+        logging.error(f"❌ Kubernetes API error: {e.reason}")
+        return jsonify({'error': f"Kubernetes API error: {e.reason}"}), 500
+    except Exception as e:
+        logging.error(f"❌ Error fetching events: {str(e)}")
+        return jsonify({'error': 'Failed to fetch events'}), 500
+
 # Start the server
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=FLASK_DEBUG)

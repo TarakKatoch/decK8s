@@ -32,6 +32,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Initialize pod health functionality
         initializePodHealth();
 
+        // Initialize event stream functionality
+        initializeEventStream();
+
         // Initial dashboard load
         updateDashboard();
         fetchNamespaces(); // Load namespaces immediately
@@ -143,6 +146,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // ========== Event Stream Initialization ==========
+    function initializeEventStream() {
+        const eventTypeFilter = document.getElementById('eventTypeFilter');
+        const resourceKindFilter = document.getElementById('resourceKindFilter');
+        const eventSearchInput = document.getElementById('eventSearchInput');
+        const refreshEventsBtn = document.getElementById('refreshEvents');
+        
+        if (eventTypeFilter) {
+            eventTypeFilter.addEventListener('change', handleEventFilterChange);
+        }
+        
+        if (resourceKindFilter) {
+            resourceKindFilter.addEventListener('change', handleEventFilterChange);
+        }
+        
+        if (eventSearchInput) {
+            eventSearchInput.addEventListener('input', debounce(handleEventFilterChange, 500));
+        }
+        
+        if (refreshEventsBtn) {
+            refreshEventsBtn.addEventListener('click', handleEventRefresh);
+        }
+    }
+
     // ========== Handlers ==========
 
     function handleImageScan(event) {
@@ -198,6 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchKubernetesInfo(selectedNamespace);
         fetchServicePodMapping(selectedNamespace); // Refresh services
         fetchPodHealth(selectedNamespace); // Refresh pod health
+        fetchEvents(selectedNamespace); // Refresh events
     }
 
     function toggleAutoRefresh() {
@@ -235,6 +263,24 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function handleEventFilterChange() {
+        console.log('🔍 Event filter changed');
+        fetchEvents(defaultNamespace);
+    }
+
+    function handleEventRefresh() {
+        const refreshBtn = document.getElementById('refreshEvents');
+        const originalText = refreshBtn.textContent;
+        
+        refreshBtn.textContent = '⏳ Refreshing...';
+        refreshBtn.disabled = true;
+        
+        fetchEvents(defaultNamespace).finally(() => {
+            refreshBtn.textContent = originalText;
+            refreshBtn.disabled = false;
+        });
+    }
+
     // ========== Dashboard Functions ==========
 
     function updateDashboard() {
@@ -243,7 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isInitialized) {
             console.log('📡 Fetching namespaces and services...');
             fetchNamespaces();
-            // fetchServicePodMapping and fetchPodHealth are now called from fetchNamespaces after namespace is set
+            // fetchServicePodMapping, fetchPodHealth, and fetchEvents are now called from fetchNamespaces after namespace is set
         }
     }
 
@@ -345,6 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetchKubernetesInfo(defaultNamespace);
                 fetchServicePodMapping(defaultNamespace); // Fetch services after namespace is set
                 fetchPodHealth(defaultNamespace); // Fetch pod health after namespace is set
+                fetchEvents(defaultNamespace); // Fetch events after namespace is set
             })
             .catch(err => {
                 console.error('❌ Failed to fetch namespaces:', err);
@@ -745,6 +792,169 @@ document.addEventListener('DOMContentLoaded', () => {
     window.showPodDetails = showPodDetails;
     window.deletePod = deletePod;
 
+    // ========== Event Stream Functions ==========
+
+    function fetchEvents(namespace) {
+        const eventTableBody = document.getElementById('eventTableBody');
+        if (!eventTableBody) {
+            console.error('❌ Event table body element not found');
+            return Promise.reject(new Error('Event table body element not found'));
+        }
+
+        // Get filter values
+        const eventTypeFilter = document.getElementById('eventTypeFilter');
+        const resourceKindFilter = document.getElementById('resourceKindFilter');
+        const eventSearchInput = document.getElementById('eventSearchInput');
+        
+        const eventType = eventTypeFilter ? eventTypeFilter.value : 'all';
+        const resourceKind = resourceKindFilter ? resourceKindFilter.value : 'all';
+        const searchQuery = eventSearchInput ? eventSearchInput.value : '';
+
+        console.log('📡 Fetching events for namespace:', namespace, 'filters:', { eventType, resourceKind, searchQuery });
+        eventTableBody.innerHTML = '<tr><td colspan="6" class="loading-row">Loading events...</td></tr>';
+
+        const url = `http://127.0.0.1:5000/events?namespace=${namespace}&type=${eventType}&kind=${resourceKind}&search=${encodeURIComponent(searchQuery)}`;
+        
+        return fetch(url)
+            .then(res => {
+                console.log('📡 Events response status:', res.status);
+                return res.json();
+            })
+            .then(data => {
+                console.log('📊 Received events data:', data);
+                if (data.error) {
+                    console.error('❌ Backend error:', data.error);
+                    eventTableBody.innerHTML = `<tr><td colspan="6" class="error">Error: ${data.error}</td></tr>`;
+                    showNotification('Failed to fetch events', 'error');
+                    throw new Error(data.error);
+                } else {
+                    console.log('✅ Rendering events table:', data.events);
+                    renderEventTable(data.events);
+                    updateEventStats(data.events);
+                    return data;
+                }
+            })
+            .catch(err => {
+                console.error('❌ Failed to fetch events:', err);
+                eventTableBody.innerHTML = '<tr><td colspan="6" class="error">Failed to load events</td></tr>';
+                showNotification('Failed to fetch events', 'error');
+                throw err;
+            });
+    }
+
+    function renderEventTable(events) {
+        const eventTableBody = document.getElementById('eventTableBody');
+        
+        if (!events || events.length === 0) {
+            eventTableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="no-events-message">
+                        No events found matching the current filters
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        const tableRows = events.map(event => {
+            const typeClass = getEventTypeClass(event.type);
+            const typeIcon = getEventTypeIcon(event.type);
+            
+            return `
+                <tr>
+                    <td>
+                        <span class="event-timestamp">${formatTimestamp(event.timestamp)}</span>
+                    </td>
+                    <td>
+                        <span class="event-type ${typeClass}">
+                            ${typeIcon} ${event.type}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="event-resource">
+                            <span class="resource-kind">${event.resource_kind}</span>
+                            <span class="resource-name">${event.resource_name}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="event-reason">${event.reason}</span>
+                    </td>
+                    <td>
+                        <span class="event-message">${event.message}</span>
+                    </td>
+                    <td>
+                        <span class="event-count">${event.count}</span>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        eventTableBody.innerHTML = tableRows;
+    }
+
+    function updateEventStats(events) {
+        const totalEvents = events.length;
+        const warningEvents = events.filter(event => event.type.toLowerCase() === 'warning').length;
+        const normalEvents = events.filter(event => event.type.toLowerCase() === 'normal').length;
+
+        updateMetric('#totalEvents', totalEvents);
+        updateMetric('#warningEvents', warningEvents);
+        updateMetric('#normalEvents', normalEvents);
+    }
+
+    function getEventTypeClass(type) {
+        const typeLower = type.toLowerCase();
+        switch (typeLower) {
+            case 'normal':
+                return 'normal';
+            case 'warning':
+                return 'warning';
+            default:
+                return 'unknown';
+        }
+    }
+
+    function getEventTypeIcon(type) {
+        const typeLower = type.toLowerCase();
+        switch (typeLower) {
+            case 'normal':
+                return '🟢';
+            case 'warning':
+                return '🟡';
+            default:
+                return '❓';
+        }
+    }
+
+    function formatTimestamp(timestamp) {
+        if (!timestamp || timestamp === 'Unknown') {
+            return 'Unknown';
+        }
+        
+        try {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+            
+            if (diffMins < 1) {
+                return 'Just now';
+            } else if (diffMins < 60) {
+                return `${diffMins}m ago`;
+            } else if (diffHours < 24) {
+                return `${diffHours}h ago`;
+            } else if (diffDays < 7) {
+                return `${diffDays}d ago`;
+            } else {
+                return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+            }
+        } catch (err) {
+            return timestamp;
+        }
+    }
+
     // ========== Utility Functions ==========
 
     // Track active notifications to prevent duplicates
@@ -877,5 +1087,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // Log dashboard load time
     const loadTime = performance.now();
     console.log(`🚀 Dashboard loaded in ${loadTime.toFixed(2)}ms`);
+
+    // Debounce function for search input
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
 });
   
