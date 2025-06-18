@@ -10,11 +10,13 @@
 
 ## 🎯 Project Significance
 
-**decK8s** is a comprehensive, modern Kubernetes monitoring and security dashboard that provides real-time system metrics, cluster management, and container security scanning. Built with a focus on user experience and security, it offers a professional-grade solution for DevOps teams, system administrators, and security professionals.
+**decK8s** is a comprehensive, modern Kubernetes monitoring and security dashboard that provides real-time system metrics, cluster management, container security scanning, and advanced pod health tracking. Built with a focus on user experience and security, it offers a professional-grade solution for DevOps teams, system administrators, and security professionals.
 
 ### Why decK8s?
 - **🔍 Real-time Monitoring**: Live system metrics with beautiful pie charts
 - **🛡️ Security First**: Integrated Trivy vulnerability scanning
+- **🔗 Service Discovery**: Visual service-to-pod mapping with click interactions
+- **🏥 Health Tracking**: Comprehensive pod health and restart monitoring
 - **🎨 Modern UI**: Apple-inspired design with particle animations
 - **⚡ Performance**: Lightweight Flask backend with responsive frontend
 - **🔧 Easy Setup**: Simple installation and configuration
@@ -28,6 +30,7 @@
 - **Storage Tracking**: Disk usage monitoring with capacity alerts
 - **Interactive Pie Charts**: Dynamic color coding (Green/Yellow/Red)
 - **Auto-refresh**: Configurable 5-second intervals
+- **Responsive Design**: Works on all screen sizes
 
 ### ⚙️ Kubernetes Cluster Management
 - **Namespace Management**: Easy switching between namespaces
@@ -35,6 +38,23 @@
 - **Health Checks**: Automated cluster health assessment
 - **Real-time Updates**: Live cluster status monitoring
 - **Multi-namespace Support**: Monitor across different namespaces
+
+### 🔗 Service Discovery & Mapping
+- **Service-to-Pod Mapping**: Click any service to see backing pods
+- **Interactive Service Cards**: Visual service overview with pod counts
+- **Modal Details**: Comprehensive service information display
+- **Pod Status Indicators**: Real-time pod readiness and health
+- **No Pod Alerts**: Clear warnings when services have no backing pods
+- **Container Details**: Individual container status and restart counts
+
+### 🏥 Pod Health & Restart Tracking
+- **Comprehensive Pod Table**: Detailed view of all pods in namespace
+- **Status Filtering**: Filter by Running, Pending, Failed, Unhealthy, CrashLoopBackOff
+- **Restart Monitoring**: Visual indicators for pod restart counts
+- **Uptime Tracking**: Real-time pod uptime calculation
+- **Health Statistics**: Total, Healthy, and Unhealthy pod counts
+- **Action Buttons**: Details and Delete actions (extensible)
+- **Real-time Refresh**: Manual refresh with loading states
 
 ### 🛡️ Security Scanner
 - **Trivy Integration**: Comprehensive vulnerability scanning
@@ -49,6 +69,7 @@
 - **Responsive Layout**: Works on all screen sizes
 - **Smooth Animations**: Professional transitions and effects
 - **Dark/Light Theme**: Optimized color schemes
+- **Interactive Modals**: Professional service and pod detail views
 
 ## 📁 Project Structure
 
@@ -72,6 +93,8 @@ deck8s/
   - System metrics collection using `psutil`
   - Kubernetes API integration
   - Trivy security scanning
+  - Service-to-pod mapping API
+  - Pod health and restart tracking API
   - RESTful API endpoints
   - CORS support for frontend communication
 
@@ -84,6 +107,8 @@ deck8s/
   - Particle.js animated background
   - Apple-inspired design elements
   - Interactive form elements
+  - Service cards and modals
+  - Pod health table with filters
 
 #### `styles.css`
 **Apple-inspired Styling**
@@ -94,6 +119,8 @@ deck8s/
   - Smooth animations and transitions
   - Professional typography
   - Interactive hover effects
+  - Modal and table styling
+  - Status indicators and badges
 
 #### `app.js`
 **Frontend JavaScript Logic**
@@ -103,6 +130,8 @@ deck8s/
   - Chart.js integration
   - Notification system
   - Auto-refresh functionality
+  - Service-to-pod mapping
+  - Pod health tracking and filtering
   - Error handling and user feedback
 
 ## 🚀 Installation
@@ -210,6 +239,19 @@ deck8s/
 - **Resource Counts**: Live deployment, pod, and service counts
 - **Health Checks**: Click "Run Health Check" for cluster status
 
+#### Service Discovery
+- **Service Cards**: Click any service to view details
+- **Pod Mapping**: See all pods backing each service
+- **Modal Details**: Comprehensive service information
+- **No Pod Alerts**: Clear warnings for services without backing pods
+
+#### Pod Health Tracking
+- **Status Filters**: Filter by Running, Pending, Failed, etc.
+- **Restart Monitoring**: Visual indicators for restart counts
+- **Uptime Display**: Real-time pod uptime calculation
+- **Health Statistics**: Overview of healthy vs unhealthy pods
+- **Manual Refresh**: Click refresh button for latest data
+
 #### Security Scanning
 - **Image Scanning**: Enter Docker image name (e.g., `nginx:latest`)
 - **Vulnerability Reports**: Detailed JSON security analysis
@@ -229,15 +271,117 @@ deck8s/
    kubectl get all
    ```
 
-2. **Test Security Scanning**
+2. **Test Service Discovery**
+   - Go to Services section
+   - Click on any service card
+   - View backing pods in modal
+
+3. **Test Pod Health Tracking**
+   - Go to Pod Health section
+   - Use filters to view different pod states
+   - Click refresh button to update data
+
+4. **Test Security Scanning**
    - Enter `nginx:latest` in the scanner
    - Click "Scan Image"
    - View vulnerability results
 
-3. **Test Auto-refresh**
+5. **Test Auto-refresh**
    - Enable auto-refresh toggle
    - Watch metrics update every 5 seconds
 
+## 🔧 Configuration
+
+### Environment Variables
+```bash
+# Logging level (optional)
+export LOG_LEVEL=INFO
+
+# Flask debug mode (optional)
+export FLASK_DEBUG=False
+```
+
+### Customization
+
+#### Chart Colors
+Edit `app.js` to modify color thresholds:
+```javascript
+if (percentage >= 80) {
+    usedColor = '#EF4444'; // Red
+} else if (percentage >= 60) {
+    usedColor = '#F59E0B'; // Yellow
+} else {
+    usedColor = '#10B981'; // Green
+}
+```
+
+#### Auto-refresh Interval
+Modify the interval in `app.js`:
+```javascript
+autoRefreshInterval = setInterval(updateDashboard, 5000); // 5 seconds
+```
+
+#### Pod Health Filters
+Add custom filters in `systeminfo.py`:
+```python
+elif status_filter.lower() == 'custom':
+    # Add your custom filter logic
+    pass
+```
+
+## 🛠️ Troubleshooting
+
+### Common Issues
+
+1. **Kubernetes Not Running**
+   ```bash
+   # Check Docker Desktop Kubernetes status
+   kubectl get nodes
+   
+   # Restart Docker Desktop if needed
+   ```
+
+2. **Trivy Not Found**
+   ```bash
+   # Verify Trivy installation
+   trivy --version
+   
+   # Reinstall if needed
+   choco install trivy  # Windows
+   brew install trivy   # macOS
+   ```
+
+3. **Port Already in Use**
+   ```bash
+   # Check if port 5000 is in use
+   netstat -ano | findstr :5000
+   
+   # Kill process or change port in systeminfo.py
+   ```
+
+4. **Chart.js Not Loading**
+   - Check internet connection
+   - Verify CDN links in HTML
+   - Clear browser cache
+
+5. **Services/Pods Not Loading**
+   - Check browser console for JavaScript errors
+   - Verify namespace selection
+   - Check Kubernetes API connectivity
+
+### Performance Optimization
+
+1. **Reduce Auto-refresh Frequency**
+   - Change from 5 seconds to 10-30 seconds
+   - Reduces server load
+
+2. **Limit Particle Count**
+   - Edit particle count in HTML
+   - Reduce from 80 to 40-60 particles
+
+3. **Optimize Chart Updates**
+   - Charts update only when data changes
+   - Efficient rendering with Chart.js
 
 ## 📈 Future Enhancements
 
@@ -248,7 +392,30 @@ deck8s/
 - **Custom Dashboards**: User-configurable layouts
 - **Role-based Access**: User authentication and permissions
 - **API Documentation**: Swagger/OpenAPI integration
+- **Pod Logs Viewer**: Real-time log streaming
+- **Resource Quotas**: Namespace resource monitoring
+- **Network Policies**: Network security visualization
+- **RBAC Management**: Role and permission management
 
+### Contributing
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **Flask**: Web framework
+- **Chart.js**: Interactive charts
+- **Particle.js**: Background animations
+- **Trivy**: Security scanning
+- **Kubernetes**: Container orchestration
+- **Apple Design System**: UI inspiration
 
 ---
 

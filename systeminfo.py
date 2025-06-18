@@ -165,6 +165,207 @@ def scan_image():
         logging.error(f"❌ Unexpected error: {str(e)}")
         return jsonify({'error': 'An unexpected error occurred'}), 500
 
+# Service-to-Pod Mapping
+@app.route('/service_pod_mapping', methods=['GET'])
+def get_service_pod_mapping():
+    namespace = request.args.get('namespace', 'default')
+    try:
+        core_v1 = client.CoreV1Api()
+        
+        # Get all services in the namespace
+        services = core_v1.list_namespaced_service(namespace)
+        service_pod_mapping = []
+        
+        for service in services.items:
+            service_info = {
+                'name': service.metadata.name,
+                'type': service.spec.type,
+                'cluster_ip': service.spec.cluster_ip,
+                'ports': [],
+                'pods': []
+            }
+            
+            # Get service ports
+            if service.spec.ports:
+                for port in service.spec.ports:
+                    service_info['ports'].append({
+                        'port': port.port,
+                        'target_port': port.target_port,
+                        'protocol': port.protocol
+                    })
+            
+            # Get pods that match the service selector
+            if service.spec.selector:
+                # Convert selector dict to label selector string
+                label_selector = ",".join([f"{k}={v}" for k, v in service.spec.selector.items()])
+                
+                try:
+                    pods = core_v1.list_namespaced_pod(namespace, label_selector=label_selector)
+                    
+                    for pod in pods.items:
+                        pod_info = {
+                            'name': pod.metadata.name,
+                            'status': pod.status.phase,
+                            'ip': pod.status.pod_ip,
+                            'ready': False,
+                            'restarts': 0
+                        }
+                        
+                        # Check if pod is ready
+                        if pod.status.conditions:
+                            for condition in pod.status.conditions:
+                                if condition.type == 'Ready':
+                                    pod_info['ready'] = condition.status == 'True'
+                        
+                        # Get restart count
+                        if pod.status.container_statuses:
+                            for container in pod.status.container_statuses:
+                                pod_info['restarts'] = container.restart_count
+                        
+                        service_info['pods'].append(pod_info)
+                        
+                except ApiException as e:
+                    logging.warning(f"⚠️ Could not fetch pods for service {service.metadata.name}: {e.reason}")
+                    service_info['pods'] = []
+            
+            service_pod_mapping.append(service_info)
+        
+        return jsonify({
+            'namespace': namespace,
+            'services': service_pod_mapping
+        })
+        
+    except ApiException as e:
+        logging.error(f"❌ Kubernetes API error: {e.reason}")
+        return jsonify({'error': f"Kubernetes API error: {e.reason}"}), 500
+    except Exception as e:
+        logging.error(f"❌ Error fetching service-pod mapping: {str(e)}")
+        return jsonify({'error': 'Failed to fetch service-pod mapping'}), 500
+
+# Pod Health & Restart Tracking
+@app.route('/pod_health', methods=['GET'])
+def get_pod_health():
+    namespace = request.args.get('namespace', 'default')
+    status_filter = request.args.get('status', '')  # Optional status filter
+    
+    try:
+        core_v1 = client.CoreV1Api()
+        pods = core_v1.list_namespaced_pod(namespace)
+        
+        pod_health_data = []
+        
+        for pod in pods.items:
+            pod_info = {
+                'name': pod.metadata.name,
+                'status': pod.status.phase,
+                'ip': pod.status.pod_ip,
+                'ready': False,
+                'restarts': 0,
+                'uptime': None,
+                'containers': [],
+                'labels': pod.metadata.labels or {},
+                'creation_timestamp': pod.metadata.creation_timestamp.isoformat() if pod.metadata.creation_timestamp else None
+            }
+            
+            # Check if pod is ready
+            if pod.status.conditions:
+                for condition in pod.status.conditions:
+                    if condition.type == 'Ready':
+                        pod_info['ready'] = condition.status == 'True'
+            
+            # Get container details and restart counts
+            if pod.status.container_statuses:
+                for container in pod.status.container_statuses:
+                    container_info = {
+                        'name': container.name,
+                        'ready': container.ready,
+                        'restart_count': container.restart_count,
+                        'state': 'unknown',
+                        'state_reason': None,
+                        'state_message': None
+                    }
+                    
+                    # Get container state details
+                    if container.state:
+                        if container.state.running:
+                            container_info['state'] = 'running'
+                            container_info['state_reason'] = 'Running'
+                            container_info['state_message'] = f"Started at {container.state.running.started_at.isoformat()}"
+                        elif container.state.waiting:
+                            container_info['state'] = 'waiting'
+                            container_info['state_reason'] = container.state.waiting.reason
+                            container_info['state_message'] = container.state.waiting.message
+                        elif container.state.terminated:
+                            container_info['state'] = 'terminated'
+                            container_info['state_reason'] = container.state.terminated.reason
+                            container_info['state_message'] = container.state.terminated.message
+                    
+                    pod_info['containers'].append(container_info)
+                    
+                    # Use the highest restart count among containers
+                    pod_info['restarts'] = max(pod_info['restarts'], container.restart_count)
+            
+            # Calculate uptime if pod is running
+            if pod.status.start_time:
+                from datetime import datetime, timezone
+                start_time = pod.status.start_time.replace(tzinfo=timezone.utc)
+                current_time = datetime.now(timezone.utc)
+                uptime_delta = current_time - start_time
+                
+                # Format uptime
+                days = uptime_delta.days
+                hours, remainder = divmod(uptime_delta.seconds, 3600)
+                minutes, seconds = divmod(remainder, 60)
+                
+                if days > 0:
+                    pod_info['uptime'] = f"{days}d {hours}h {minutes}m"
+                elif hours > 0:
+                    pod_info['uptime'] = f"{hours}h {minutes}m"
+                else:
+                    pod_info['uptime'] = f"{minutes}m {seconds}s"
+            
+            # Apply status filter if specified
+            if status_filter and status_filter.lower() != 'all':
+                if status_filter.lower() == 'unhealthy':
+                    # Show pods that are not running or have high restart counts
+                    if pod_info['status'].lower() != 'running' or pod_info['restarts'] > 0:
+                        pod_health_data.append(pod_info)
+                elif status_filter.lower() == 'crashloopbackoff':
+                    # Show pods with CrashLoopBackOff state
+                    has_crashloop = any(container['state_reason'] == 'CrashLoopBackOff' 
+                                      for container in pod_info['containers'])
+                    if has_crashloop:
+                        pod_health_data.append(pod_info)
+                elif status_filter.lower() == 'pending':
+                    # Show pending pods
+                    if pod_info['status'].lower() == 'pending':
+                        pod_health_data.append(pod_info)
+                elif status_filter.lower() == 'failed':
+                    # Show failed pods
+                    if pod_info['status'].lower() == 'failed':
+                        pod_health_data.append(pod_info)
+                else:
+                    # Show pods matching specific status
+                    if pod_info['status'].lower() == status_filter.lower():
+                        pod_health_data.append(pod_info)
+            else:
+                # No filter, show all pods
+                pod_health_data.append(pod_info)
+        
+        return jsonify({
+            'namespace': namespace,
+            'pods': pod_health_data,
+            'total_pods': len(pod_health_data),
+            'filter': status_filter
+        })
+        
+    except ApiException as e:
+        logging.error(f"❌ Kubernetes API error: {e.reason}")
+        return jsonify({'error': f"Kubernetes API error: {e.reason}"}), 500
+    except Exception as e:
+        logging.error(f"❌ Error fetching pod health: {str(e)}")
+        return jsonify({'error': 'Failed to fetch pod health information'}), 500
+
 # Start the server
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=FLASK_DEBUG)

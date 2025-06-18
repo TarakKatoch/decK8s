@@ -26,6 +26,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Initialize pie charts
         initializeCharts();
 
+        // Initialize modal functionality
+        initializeModal();
+
+        // Initialize pod health functionality
+        initializePodHealth();
+
         // Initial dashboard load
         updateDashboard();
         fetchNamespaces(); // Load namespaces immediately
@@ -98,6 +104,45 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // ========== Modal Initialization ==========
+    function initializeModal() {
+        const modal = document.getElementById('serviceModal');
+        const closeBtn = modal.querySelector('.close');
+        
+        // Close modal when clicking the X button
+        closeBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+        
+        // Close modal when clicking outside of it
+        window.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && modal.style.display === 'block') {
+                modal.style.display = 'none';
+            }
+        });
+    }
+
+    // ========== Pod Health Initialization ==========
+    function initializePodHealth() {
+        const statusFilter = document.getElementById('statusFilter');
+        const refreshPodsBtn = document.getElementById('refreshPods');
+        
+        if (statusFilter) {
+            statusFilter.addEventListener('change', handlePodFilterChange);
+        }
+        
+        if (refreshPodsBtn) {
+            refreshPodsBtn.addEventListener('click', handlePodRefresh);
+        }
+    }
+
     // ========== Handlers ==========
 
     function handleImageScan(event) {
@@ -151,6 +196,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         fetchKubernetesInfo(selectedNamespace);
+        fetchServicePodMapping(selectedNamespace); // Refresh services
+        fetchPodHealth(selectedNamespace); // Refresh pod health
     }
 
     function toggleAutoRefresh() {
@@ -166,12 +213,37 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function handlePodFilterChange() {
+        const statusFilter = document.getElementById('statusFilter');
+        const selectedFilter = statusFilter.value;
+        console.log('🔍 Pod filter changed to:', selectedFilter);
+        fetchPodHealth(defaultNamespace, selectedFilter);
+    }
+
+    function handlePodRefresh() {
+        const refreshBtn = document.getElementById('refreshPods');
+        const statusFilter = document.getElementById('statusFilter');
+        const originalText = refreshBtn.textContent;
+        const currentFilter = statusFilter ? statusFilter.value : 'all';
+        
+        refreshBtn.textContent = '⏳ Refreshing...';
+        refreshBtn.disabled = true;
+        
+        fetchPodHealth(defaultNamespace, currentFilter).finally(() => {
+            refreshBtn.textContent = originalText;
+            refreshBtn.disabled = false;
+        });
+    }
+
     // ========== Dashboard Functions ==========
 
     function updateDashboard() {
+        console.log('🔄 Updating dashboard...');
         fetchSystemInfo();
         if (isInitialized) {
+            console.log('📡 Fetching namespaces and services...');
             fetchNamespaces();
+            // fetchServicePodMapping and fetchPodHealth are now called from fetchNamespaces after namespace is set
         }
     }
 
@@ -253,11 +325,14 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch('http://127.0.0.1:5000/kubernetes_namespaces')
             .then(res => res.json())
             .then(namespaces => {
+                // Clear existing options
                 namespaceDropdown.innerHTML = '';
-                namespaces.forEach(ns => {
+                
+                // Add namespace options
+                namespaces.forEach(namespace => {
                     const option = document.createElement('option');
-                    option.value = ns;
-                    option.textContent = ns;
+                    option.value = namespace;
+                    option.textContent = namespace;
                     namespaceDropdown.appendChild(option);
                 });
 
@@ -268,6 +343,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 namespaceDropdown.value = defaultNamespace;
 
                 fetchKubernetesInfo(defaultNamespace);
+                fetchServicePodMapping(defaultNamespace); // Fetch services after namespace is set
+                fetchPodHealth(defaultNamespace); // Fetch pod health after namespace is set
             })
             .catch(err => {
                 console.error('❌ Failed to fetch namespaces:', err);
@@ -325,6 +402,348 @@ document.addEventListener('DOMContentLoaded', () => {
             scanResults.textContent = result;
         }
     }
+
+    // ========== Service-to-Pod Mapping Functions ==========
+
+    function fetchServicePodMapping(namespace) {
+        const servicesList = document.getElementById('servicesList');
+        if (!servicesList) {
+            console.error('❌ Services list element not found');
+            return;
+        }
+
+        console.log('🔍 Fetching services for namespace:', namespace);
+        servicesList.innerHTML = '<div class="loading">Loading services...</div>';
+
+        fetch(`http://127.0.0.1:5000/service_pod_mapping?namespace=${namespace}`)
+            .then(res => {
+                console.log('📡 Response status:', res.status);
+                return res.json();
+            })
+            .then(data => {
+                console.log('📊 Received data:', data);
+                if (data.error) {
+                    console.error('❌ Backend error:', data.error);
+                    servicesList.innerHTML = `<div class="error">Error: ${data.error}</div>`;
+                    showNotification('Failed to fetch services', 'error');
+                } else {
+                    console.log('✅ Rendering services:', data.services);
+                    renderServices(data.services);
+                }
+            })
+            .catch(err => {
+                console.error('❌ Failed to fetch service-pod mapping:', err);
+                servicesList.innerHTML = '<div class="error">Failed to load services</div>';
+                showNotification('Failed to fetch services', 'error');
+            });
+    }
+
+    function renderServices(services) {
+        console.log('🎨 Starting to render services:', services);
+        const servicesList = document.getElementById('servicesList');
+        
+        if (!services || services.length === 0) {
+            console.log('📭 No services found, showing empty state');
+            servicesList.innerHTML = '<div class="no-services">No services found in this namespace</div>';
+            return;
+        }
+
+        console.log(`📋 Rendering ${services.length} services`);
+        servicesList.innerHTML = ''; // Clear previous
+
+        services.forEach((service, index) => {
+            console.log(`🔧 Rendering service ${index + 1}:`, service.name);
+            const podCount = service.pods.length;
+            const readyPods = service.pods.filter(pod => pod.ready).length;
+
+            const card = document.createElement('div');
+            card.className = 'service-card';
+
+            card.innerHTML = `
+                <div class="service-name">${service.name}</div>
+                <div class="service-type">${service.type}</div>
+                <div class="service-ip">${service.cluster_ip || 'None'}</div>
+                <div class="service-pods">
+                    <span>📦 ${readyPods}/${podCount} pods ready</span>
+                    <span class="pod-count">${podCount}</span>
+                </div>
+            `;
+
+            card.addEventListener('click', () => {
+                console.log('🖱️ Service clicked:', service.name);
+                showServiceDetails(service.name, service);
+            });
+            servicesList.appendChild(card);
+        });
+        
+        console.log('✅ Services rendering completed');
+    }
+
+    function showServiceDetails(serviceName, serviceData) {
+        const modal = document.getElementById('serviceModal');
+        const modalServiceName = document.getElementById('modalServiceName');
+        const modalServiceType = document.getElementById('modalServiceType');
+        const modalServiceIP = document.getElementById('modalServiceIP');
+        const modalServicePorts = document.getElementById('modalServicePorts');
+        const modalPodsList = document.getElementById('modalPodsList');
+
+        // Update modal header
+        modalServiceName.textContent = serviceName;
+
+        // Update service info
+        modalServiceType.textContent = serviceData.type;
+        modalServiceIP.textContent = serviceData.cluster_ip || 'None';
+
+        // Format ports
+        if (serviceData.ports && serviceData.ports.length > 0) {
+            const portsText = serviceData.ports.map(port => 
+                `${port.port}${port.target_port ? ':' + port.target_port : ''} (${port.protocol})`
+            ).join(', ');
+            modalServicePorts.textContent = portsText;
+        } else {
+            modalServicePorts.textContent = 'No ports defined';
+        }
+
+        // Render pods
+        if (serviceData.pods && serviceData.pods.length > 0) {
+            const podsHTML = serviceData.pods.map(pod => {
+                const statusClass = getPodStatusClass(pod.status);
+                const readyIcon = pod.ready ? '✅' : '❌';
+                
+                return `
+                    <div class="pod-item">
+                        <div class="pod-header">
+                            <span class="pod-name">${pod.name}</span>
+                            <span class="pod-status ${statusClass}">${pod.status}</span>
+                        </div>
+                        <div class="pod-details">
+                            <div class="pod-detail">
+                                <span class="label">Ready:</span>
+                                <span>${readyIcon} ${pod.ready ? 'Yes' : 'No'}</span>
+                            </div>
+                            <div class="pod-detail">
+                                <span class="label">IP:</span>
+                                <span>${pod.ip || 'None'}</span>
+                            </div>
+                            <div class="pod-detail">
+                                <span class="label">Restarts:</span>
+                                <span>${pod.restarts}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            modalPodsList.innerHTML = podsHTML;
+        } else {
+            modalPodsList.innerHTML = `
+                <div class="no-pods">
+                    No backing pods found for this service!
+                    <br><small>This service has no selector or no pods match the selector.</small>
+                </div>
+            `;
+        }
+
+        // Show modal
+        modal.style.display = 'block';
+    }
+
+    function getPodStatusClass(status) {
+        switch (status.toLowerCase()) {
+            case 'running':
+                return 'running';
+            case 'pending':
+                return 'pending';
+            case 'failed':
+            case 'error':
+                return 'failed';
+            default:
+                return 'unknown';
+        }
+    }
+
+    // Make showServiceDetails globally accessible
+    window.showServiceDetails = showServiceDetails;
+
+    // ========== Pod Health Functions ==========
+
+    function fetchPodHealth(namespace, statusFilter = 'all') {
+        const podTableBody = document.getElementById('podTableBody');
+        if (!podTableBody) {
+            console.error('❌ Pod table body element not found');
+            return Promise.reject(new Error('Pod table body element not found'));
+        }
+
+        console.log('🏥 Fetching pod health for namespace:', namespace, 'filter:', statusFilter);
+        podTableBody.innerHTML = '<tr><td colspan="7" class="loading-row">Loading pods...</td></tr>';
+
+        const url = `http://127.0.0.1:5000/pod_health?namespace=${namespace}&status=${statusFilter}`;
+        
+        return fetch(url)
+            .then(res => {
+                console.log('📡 Pod health response status:', res.status);
+                return res.json();
+            })
+            .then(data => {
+                console.log('📊 Received pod health data:', data);
+                if (data.error) {
+                    console.error('❌ Backend error:', data.error);
+                    podTableBody.innerHTML = `<tr><td colspan="7" class="error">Error: ${data.error}</td></tr>`;
+                    showNotification('Failed to fetch pod health', 'error');
+                    throw new Error(data.error);
+                } else {
+                    console.log('✅ Rendering pod health table:', data.pods);
+                    renderPodTable(data.pods);
+                    updatePodStats(data.pods);
+                    return data;
+                }
+            })
+            .catch(err => {
+                console.error('❌ Failed to fetch pod health:', err);
+                podTableBody.innerHTML = '<tr><td colspan="7" class="error">Failed to load pods</td></tr>';
+                showNotification('Failed to fetch pod health', 'error');
+                throw err;
+            });
+    }
+
+    function renderPodTable(pods) {
+        const podTableBody = document.getElementById('podTableBody');
+        
+        if (!pods || pods.length === 0) {
+            podTableBody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="no-pods-message">
+                        No pods found matching the current filter
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        const tableRows = pods.map(pod => {
+            const statusClass = getPodStatusClass(pod.status);
+            const restartClass = getRestartClass(pod.restarts);
+            const readyClass = pod.ready ? 'ready' : 'not-ready';
+            const readyIcon = pod.ready ? '✅' : '❌';
+            
+            return `
+                <tr>
+                    <td>
+                        <div class="pod-name">${pod.name}</div>
+                    </td>
+                    <td>
+                        <span class="pod-status ${statusClass}">
+                            ${getStatusIcon(pod.status)} ${pod.status}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="restart-count ${restartClass}">
+                            🔄 ${pod.restarts}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="uptime">${pod.uptime || 'N/A'}</span>
+                    </td>
+                    <td>
+                        <span class="pod-ip">${pod.ip || 'None'}</span>
+                    </td>
+                    <td>
+                        <span class="ready-status ${readyClass}">
+                            ${readyIcon} ${pod.ready ? 'Ready' : 'Not Ready'}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="pod-actions">
+                            <button class="action-btn" onclick="showPodDetails('${pod.name}')">
+                                📋 Details
+                            </button>
+                            <button class="action-btn danger" onclick="deletePod('${pod.name}')">
+                                🗑️ Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        podTableBody.innerHTML = tableRows;
+    }
+
+    function updatePodStats(pods) {
+        const totalPods = pods.length;
+        const healthyPods = pods.filter(pod => 
+            pod.status.toLowerCase() === 'running' && pod.ready && pod.restarts === 0
+        ).length;
+        const unhealthyPods = totalPods - healthyPods;
+
+        updateMetric('#totalPods', totalPods);
+        updateMetric('#healthyPods', healthyPods);
+        updateMetric('#unhealthyPods', unhealthyPods);
+    }
+
+    function getPodStatusClass(status) {
+        const statusLower = status.toLowerCase();
+        switch (statusLower) {
+            case 'running':
+                return 'running';
+            case 'pending':
+                return 'pending';
+            case 'failed':
+                return 'failed';
+            case 'succeeded':
+                return 'succeeded';
+            case 'unknown':
+                return 'unknown';
+            default:
+                return 'unknown';
+        }
+    }
+
+    function getRestartClass(restarts) {
+        if (restarts === 0) {
+            return 'normal';
+        } else if (restarts <= 3) {
+            return 'warning';
+        } else {
+            return 'critical';
+        }
+    }
+
+    function getStatusIcon(status) {
+        const statusLower = status.toLowerCase();
+        switch (statusLower) {
+            case 'running':
+                return '🟢';
+            case 'pending':
+                return '🟡';
+            case 'failed':
+                return '🔴';
+            case 'succeeded':
+                return '✅';
+            case 'unknown':
+                return '❓';
+            default:
+                return '❓';
+        }
+    }
+
+    function showPodDetails(podName) {
+        console.log('📋 Showing details for pod:', podName);
+        showNotification(`Pod details for ${podName} - Feature coming soon!`, 'info');
+        // TODO: Implement pod details modal
+    }
+
+    function deletePod(podName) {
+        if (confirm(`Are you sure you want to delete pod "${podName}"?`)) {
+            console.log('🗑️ Deleting pod:', podName);
+            showNotification(`Deleting pod ${podName} - Feature coming soon!`, 'warning');
+            // TODO: Implement pod deletion
+        }
+    }
+
+    // Make pod functions globally accessible
+    window.showPodDetails = showPodDetails;
+    window.deletePod = deletePod;
 
     // ========== Utility Functions ==========
 
