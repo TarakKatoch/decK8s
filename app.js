@@ -13,16 +13,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Chart instances
     let storageChart, memoryChart, cpuChart;
-
+  
     // ========== Initial Setup ==========
     init();
-
+  
     function init() {
-        if (scanForm) scanForm.addEventListener('submit', handleImageScan);
-        if (healthCheckButton) healthCheckButton.addEventListener('click', handleHealthCheck);
-        if (namespaceDropdown) namespaceDropdown.addEventListener('change', handleNamespaceChange);
-        if (autoRefreshToggle) autoRefreshToggle.addEventListener('change', toggleAutoRefresh);
-
+      if (scanForm) scanForm.addEventListener('submit', handleImageScan);
+      if (healthCheckButton) healthCheckButton.addEventListener('click', handleHealthCheck);
+      if (namespaceDropdown) namespaceDropdown.addEventListener('change', handleNamespaceChange);
+      if (autoRefreshToggle) autoRefreshToggle.addEventListener('change', toggleAutoRefresh);
+  
         // Initialize pie charts
         initializeCharts();
 
@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
         initializeClusterMetrics();
 
         // Initial dashboard load
-        updateDashboard();
+      updateDashboard();
         fetchNamespaces(); // Load namespaces immediately
         isInitialized = true;
     }
@@ -258,7 +258,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const tableRows = nodes.map(node => {
             const statusClass = node.status.toLowerCase() === 'ready' ? 'ready' : 'not-ready';
             const statusIcon = node.status.toLowerCase() === 'ready' ? '🟢' : '🔴';
-            
+            // CPU: show as is (usually cores)
+            const cpu = node.capacity.cpu ? node.capacity.cpu + ' cores' : '';
+            // Memory: convert Ki to MiB if possible
+            let mem = node.capacity.memory || '';
+            if (mem.endsWith('Ki')) {
+                const mib = Math.round(parseInt(mem.replace('Ki','')) / 1024);
+                mem = mib + ' MiB';
+            }
+            // Pods: show as is with unit
+            const pods = node.capacity.pods ? node.capacity.pods + ' pods' : '';
             return `
                 <tr>
                     <td>
@@ -279,13 +288,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span class="node-version">${node.kubelet_version}</span>
                     </td>
                     <td>
-                        <span class="node-capacity">${node.capacity.cpu}</span>
+                        <span class="node-capacity">${cpu}</span>
                     </td>
                     <td>
-                        <span class="node-capacity">${node.capacity.memory}</span>
+                        <span class="node-capacity">${mem}</span>
                     </td>
                     <td>
-                        <span class="node-capacity">${node.capacity.pods}</span>
+                        <span class="node-capacity">${pods}</span>
                     </td>
                 </tr>
             `;
@@ -293,12 +302,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         nodesTableBody.innerHTML = tableRows;
     }
-
+  
     // ========== Handlers ==========
-
+  
     function handleImageScan(event) {
-        event.preventDefault();
-        const imageName = imageInput.value.trim();
+      event.preventDefault();
+      const imageName = imageInput.value.trim();
         
         if (!imageName) {
             showNotification('Please enter a Docker image name.', 'warning');
@@ -317,50 +326,50 @@ document.addEventListener('DOMContentLoaded', () => {
             submitButton.disabled = false;
         });
     }
-
+  
     function handleHealthCheck() {
         healthCheckButton.textContent = '🔍 Checking...';
         healthCheckButton.disabled = true;
         healthCheckResult.textContent = '';
         
-        fetchKubernetesInfo(defaultNamespace, (data) => {
-            const healthy = data.num_pods > 0;
+      fetchKubernetesInfo(defaultNamespace, (data) => {
+        const healthy = data.num_pods > 0;
             healthCheckResult.textContent = healthy ? '✅ Healthy' : '❌ Unhealthy';
             healthCheckResult.style.color = healthy ? '#10b981' : '#ef4444';
             healthCheckButton.textContent = '🔍 Run Health Check';
             healthCheckButton.disabled = false;
-        }, () => {
+      }, () => {
             healthCheckResult.textContent = '❌ Error';
             healthCheckResult.style.color = '#ef4444';
             healthCheckButton.textContent = '🔍 Run Health Check';
             healthCheckButton.disabled = false;
-        });
+      });
     }
-
+  
     function handleNamespaceChange() {
-        const selectedNamespace = namespaceDropdown.value;
-        defaultNamespace = selectedNamespace;
+      const selectedNamespace = namespaceDropdown.value;
+      defaultNamespace = selectedNamespace;
         
         // Reset health check status when changing namespaces
         if (healthCheckResult) {
             healthCheckResult.textContent = '';
         }
         
-        fetchKubernetesInfo(selectedNamespace);
+      fetchKubernetesInfo(selectedNamespace);
         fetchServicePodMapping(selectedNamespace); // Refresh services
         fetchPodHealth(selectedNamespace); // Refresh pod health
         fetchEvents(selectedNamespace); // Refresh events
     }
-
+  
     function toggleAutoRefresh() {
         // Clear any existing notifications first
         clearAllNotifications();
         
-        if (autoRefreshToggle.checked) {
-            autoRefreshInterval = setInterval(updateDashboard, 5000);
+      if (autoRefreshToggle.checked) {
+        autoRefreshInterval = setInterval(updateDashboard, 5000);
             showNotification('Auto-refresh enabled (5s interval)', 'info');
-        } else {
-            clearInterval(autoRefreshInterval);
+      } else {
+        clearInterval(autoRefreshInterval);
             showNotification('Auto-refresh disabled', 'info');
         }
     }
@@ -406,22 +415,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ========== Dashboard Functions ==========
-
+  
     function updateDashboard() {
         console.log('🔄 Updating dashboard...');
-        fetchSystemInfo();
+      fetchSystemInfo();
         fetchClusterMetrics();
         if (isInitialized) {
             console.log('📡 Fetching namespaces and services...');
-            fetchNamespaces();
+      fetchNamespaces();
             // fetchServicePodMapping, fetchPodHealth, and fetchEvents are now called from fetchNamespaces after namespace is set
         }
     }
-
+  
     function fetchSystemInfo() {
-        fetch('http://127.0.0.1:5000/system_info')
-            .then(res => res.json())
-            .then(data => {
+      fetch('http://127.0.0.1:5000/system_info')
+        .then(res => res.json())
+        .then(data => {
                 updateChart(storageChart, data.disk_usage.percent, 'storagePercentage', {
                     used: data.disk_usage.used,
                     free: data.disk_usage.free,
@@ -491,88 +500,88 @@ document.addEventListener('DOMContentLoaded', () => {
         const i = Math.floor(Math.log(bytes) / Math.log(k));
         return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
     }
-
+  
     function fetchNamespaces() {
-        fetch('http://127.0.0.1:5000/kubernetes_namespaces')
-            .then(res => res.json())
-            .then(namespaces => {
+      fetch('http://127.0.0.1:5000/kubernetes_namespaces')
+        .then(res => res.json())
+        .then(namespaces => {
                 // Clear existing options
-                namespaceDropdown.innerHTML = '';
+          namespaceDropdown.innerHTML = '';
                 
                 // Add namespace options
                 namespaces.forEach(namespace => {
-                    const option = document.createElement('option');
+            const option = document.createElement('option');
                     option.value = namespace;
                     option.textContent = namespace;
-                    namespaceDropdown.appendChild(option);
-                });
-
-                // Set default or retain selected
-                if (!namespaces.includes(defaultNamespace)) {
-                    defaultNamespace = namespaces[0] || 'default';
-                }
-                namespaceDropdown.value = defaultNamespace;
-
-                fetchKubernetesInfo(defaultNamespace);
+            namespaceDropdown.appendChild(option);
+          });
+  
+          // Set default or retain selected
+          if (!namespaces.includes(defaultNamespace)) {
+            defaultNamespace = namespaces[0] || 'default';
+          }
+          namespaceDropdown.value = defaultNamespace;
+  
+          fetchKubernetesInfo(defaultNamespace);
                 fetchServicePodMapping(defaultNamespace); // Fetch services after namespace is set
                 fetchPodHealth(defaultNamespace); // Fetch pod health after namespace is set
                 fetchEvents(defaultNamespace); // Fetch events after namespace is set
-            })
+        })
             .catch(err => {
                 console.error('❌ Failed to fetch namespaces:', err);
                 showNotification('Failed to fetch Kubernetes namespaces', 'error');
             });
     }
-
+  
     function fetchKubernetesInfo(namespace, onSuccess, onError) {
-        fetch(`http://127.0.0.1:5000/kubernetes_info?namespace=${namespace}`)
-            .then(res => res.json())
-            .then(data => {
+      fetch(`http://127.0.0.1:5000/kubernetes_info?namespace=${namespace}`)
+        .then(res => res.json())
+        .then(data => {
                 updateMetric('.deployments .count', data.num_deployments);
                 updateMetric('.pods-running .count', data.num_pods);
                 updateMetric('.services-running .count', data.num_services);
-                if (onSuccess) onSuccess(data);
-            })
-            .catch(err => {
-                console.error(`❌ Failed to fetch Kubernetes info for ${namespace}:`, err);
-                if (onError) onError(err);
-            });
+          if (onSuccess) onSuccess(data);
+        })
+        .catch(err => {
+          console.error(`❌ Failed to fetch Kubernetes info for ${namespace}:`, err);
+          if (onError) onError(err);
+        });
     }
-
+  
     function scanImage(imageName) {
         return fetch('http://127.0.0.1:5000/scan_image', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ container_id: imageName }),
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (data.error) {
-                    scanResults.textContent = `Error: ${data.error}`;
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ container_id: imageName }),
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            scanResults.textContent = `Error: ${data.error}`;
                     scanResults.style.color = '#ef4444';
                     showNotification('Scan failed: ' + data.error, 'error');
-                } else {
+          } else {
                     scanResults.style.color = '#10b981';
-                    scanResults.textContent = '';
-                    renderScanResult(data.scan_results);
+            scanResults.textContent = '';
+            renderScanResult(data.scan_results);
                     showNotification('Scan completed successfully', 'success');
-                }
-            })
-            .catch(err => {
-                console.error('❌ Scan failed:', err);
+          }
+        })
+        .catch(err => {
+          console.error('❌ Scan failed:', err);
                 scanResults.textContent = 'Scan failed. Please check if Trivy is installed.';
                 scanResults.style.color = '#ef4444';
                 showNotification('Scan failed. Check Trivy installation.', 'error');
-            });
+        });
     }
-
+  
     function renderScanResult(result) {
         let formatted;
-        try {
+      try {
             formatted = typeof result === 'string' ? JSON.parse(result) : result;
-            scanResults.textContent = JSON.stringify(formatted, null, 2);
-        } catch (err) {
-            scanResults.textContent = result;
+        scanResults.textContent = JSON.stringify(formatted, null, 2);
+      } catch (err) {
+        scanResults.textContent = result;
             formatted = null;
         }
 
@@ -1186,93 +1195,82 @@ document.addEventListener('DOMContentLoaded', () => {
         activeNotifications.clear();
     }
 
-    function showNotification(message, type = 'info') {
-        // Create a unique key for this notification
-        const notificationKey = `${message}-${type}`;
-        
-        // Check if this exact notification is already active
-        if (activeNotifications.has(notificationKey)) {
-            return; // Don't show duplicate notifications
-        }
+    // ========== Improved Notification System (one at a time, smooth, interruptible) ==========
+    let notificationActive = false;
+    let notificationQueue = [];
+    let currentNotification = null;
+    let fadeTimeout = null;
+    let removeTimeout = null;
 
-        // Clear any existing debounce timer
-        if (notificationDebounceTimer) {
-            clearTimeout(notificationDebounceTimer);
-        }
+    function showNotification(message, type = 'info', duration = 3500) {
+        notificationQueue.push({ message, type, duration });
+        processNextNotification();
+    }
 
-        // Debounce rapid notifications
-        notificationDebounceTimer = setTimeout(() => {
-            // Remove any existing notifications first
-            const existingNotifications = document.querySelectorAll('.notification');
-            let hasExistingNotifications = existingNotifications.length > 0;
-            
-            if (hasExistingNotifications) {
-                existingNotifications.forEach(notification => {
-                    notification.style.transform = 'translateX(100%)';
-                    setTimeout(() => {
-                        if (notification.parentNode) {
-                            notification.parentNode.removeChild(notification);
-                            activeNotifications.delete(notification.dataset.key);
-                        }
-                    }, 300);
-                });
+    function processNextNotification() {
+        if (notificationActive) {
+            // If a notification is active and not already fading, fade it out immediately
+            if (currentNotification && !currentNotification.classList.contains('fade-out')) {
+                clearTimeout(fadeTimeout);
+                clearTimeout(removeTimeout);
+                currentNotification.classList.add('fade-out');
+                removeTimeout = setTimeout(() => {
+                    if (currentNotification) currentNotification.remove();
+                    notificationActive = false;
+                    currentNotification = null;
+                    processNextNotification();
+                }, 450);
             }
+            return;
+        }
+        if (notificationQueue.length === 0) {
+            notificationActive = false;
+            return;
+        }
+        notificationActive = true;
+        const { message, type, duration } = notificationQueue.shift();
+        const container = document.getElementById('notificationContainer');
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        container.appendChild(notification);
+        currentNotification = notification;
+        fadeTimeout = setTimeout(() => {
+            notification.classList.add('fade-out');
+            removeTimeout = setTimeout(() => {
+                notification.remove();
+                notificationActive = false;
+                currentNotification = null;
+                processNextNotification();
+            }, 450);
+        }, duration);
+    }
 
-            // Wait a bit for the previous notification to slide out, then show the new one
-            setTimeout(() => {
-                // Create notification element
-                const notification = document.createElement('div');
-                notification.className = `notification notification-${type}`;
-                notification.textContent = message;
-                notification.dataset.key = notificationKey;
-                
-                // Style the notification
-                Object.assign(notification.style, {
-                    position: 'fixed',
-                    top: '20px',
-                    right: '20px',
-                    padding: '12px 20px',
-                    borderRadius: '8px',
-                    color: 'white',
-                    fontWeight: '500',
-                    zIndex: '1000',
-                    transform: 'translateX(100%)',
-                    transition: 'transform 0.3s ease',
-                    maxWidth: '300px',
-                    wordWrap: 'break-word',
-                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+    // ========== Tab Navigation ==========
+    function setupTabNavigation() {
+        const tabs = [
+            { id: 'tab-metrics', page: 'page-metrics' },
+            { id: 'tab-k8s', page: 'page-k8s' },
+            { id: 'tab-security', page: 'page-security' }
+        ];
+        tabs.forEach(tab => {
+            const tabEl = document.getElementById(tab.id);
+            tabEl.addEventListener('click', () => {
+                // Hide all pages
+                tabs.forEach(t => {
+                    document.getElementById(t.page).style.display = 'none';
+                    document.getElementById(t.id).classList.remove('active');
                 });
-
-                // Set background color based on type
-                const colors = {
-                    success: '#10b981',
-                    error: '#ef4444',
-                    warning: '#f59e0b',
-                    info: '#06b6d4'
-                };
-                notification.style.backgroundColor = colors[type] || colors.info;
-
-                // Add to page
-                document.body.appendChild(notification);
-                activeNotifications.add(notificationKey);
-
-                // Animate in with a slight delay for smoother appearance
-                requestAnimationFrame(() => {
-                    notification.style.transform = 'translateX(0)';
-                });
-
-                // Remove after 4 seconds
-                setTimeout(() => {
-                    notification.style.transform = 'translateX(100%)';
-                    setTimeout(() => {
-                        if (notification.parentNode) {
-                            notification.parentNode.removeChild(notification);
-                            activeNotifications.delete(notificationKey);
-                        }
-                    }, 300);
-                }, 4000);
-            }, hasExistingNotifications ? 350 : 50); // Shorter delay if no existing notifications
-        }, 100); // 100ms debounce delay
+                // Show selected page
+                document.getElementById(tab.page).style.display = 'block';
+                tabEl.classList.add('active');
+            });
+        });
+        // Set default tab
+        document.getElementById('tab-metrics').classList.add('active');
+        document.getElementById('page-metrics').style.display = 'block';
+        document.getElementById('page-k8s').style.display = 'none';
+        document.getElementById('page-security').style.display = 'none';
     }
 
     // ========== Error Handling ==========
@@ -1300,5 +1298,8 @@ document.addEventListener('DOMContentLoaded', () => {
             timeout = setTimeout(later, wait);
         };
     }
-});
+
+    // Call setupTabNavigation on DOMContentLoaded
+    setupTabNavigation();
+  });
   

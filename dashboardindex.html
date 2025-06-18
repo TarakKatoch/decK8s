@@ -21,313 +21,328 @@
 
 <div class="dashboard">
   <header>
-    <h1><span style="color:#ffffff;">dec</span><span style="color:#000000;">K8s</span></h1>
+    <nav class="main-nav">
+      <div class="nav-logo"><span style="color:#ffffff;">dec</span><span style="color:#000000;">K8s</span></div>
+      <ul class="nav-tabs">
+        <li class="nav-tab" id="tab-metrics">Metrics</li>
+        <li class="nav-tab" id="tab-k8s">K8s Cluster</li>
+        <li class="nav-tab" id="tab-security">Security Scanner</li>
+      </ul>
+    </nav>
   </header>
 
-  <main>
-    <!-- System Metrics Section -->
-    <section class="top-section">
-      <h2>System Metrics</h2>
-      <div class="metrics-grid">
-        <div class="metric storage-used">
-          <div class="chart-container">
-            <canvas id="storageChart"></canvas>
-            <div class="percentage-display" id="storagePercentage">--%</div>
-            <div class="usage-details">
-              <div class="usage-item">
-                <span class="usage-label">Used:</span>
-                <span class="usage-value" id="storageUsed">--</span>
-              </div>
-              <div class="usage-item">
-                <span class="usage-label">Free:</span>
-                <span class="usage-value" id="storageFree">--</span>
-              </div>
-            </div>
-            <div class="chart-label">Storage Used</div>
-          </div>
-        </div>
-        <div class="metric memory-utilization">
-          <div class="chart-container">
-            <canvas id="memoryChart"></canvas>
-            <div class="percentage-display" id="memoryPercentage">--%</div>
-            <div class="usage-details">
-              <div class="usage-item">
-                <span class="usage-label">Used:</span>
-                <span class="usage-value" id="memoryUsed">--</span>
-              </div>
-              <div class="usage-item">
-                <span class="usage-label">Free:</span>
-                <span class="usage-value" id="memoryFree">--</span>
-              </div>
-            </div>
-            <div class="chart-label">Memory Used</div>
-          </div>
-        </div>
-        <div class="metric cpu-utilization">
-          <div class="chart-container">
-            <canvas id="cpuChart"></canvas>
-            <div class="percentage-display" id="cpuPercentage">--%</div>
-            <div class="usage-details">
-              <div class="usage-item">
-                <span class="usage-label">Used:</span>
-                <span class="usage-value" id="cpuUsed">--</span>
-              </div>
-              <div class="usage-item">
-                <span class="usage-label">Free:</span>
-                <span class="usage-value" id="cpuFree">--</span>
-              </div>
-            </div>
-            <div class="chart-label">CPU Used</div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="auto-refresh">
-        <input type="checkbox" id="autoRefreshToggle">
-        <label for="autoRefreshToggle">Auto-refresh every 5 seconds</label>
-      </div>
-    </section>
+  <div id="notificationContainer"></div>
 
-    <!-- Cluster Metrics Section -->
-    <section class="cluster-section">
-      <h2>Cluster Metrics</h2>
-      <div class="cluster-overview">
-        <div class="cluster-info">
-          <div class="cluster-version">
-            <h3>📋 Cluster Version</h3>
-            <div class="version-details">
-              <div class="version-item">
-                <span class="version-label">Version:</span>
-                <span class="version-value" id="clusterVersion">--</span>
+  <main>
+    <!-- Metrics Page -->
+    <section id="page-metrics" class="page-section">
+      <!-- System Metrics Section -->
+      <section class="top-section">
+        <h2>System Metrics</h2>
+        <div class="metrics-grid">
+          <div class="metric storage-used">
+            <div class="chart-container">
+              <canvas id="storageChart"></canvas>
+              <div class="percentage-display" id="storagePercentage">--%</div>
+              <div class="usage-details">
+                <div class="usage-item">
+                  <span class="usage-label">Used:</span>
+                  <span class="usage-value" id="storageUsed">--</span>
+                </div>
+                <div class="usage-item">
+                  <span class="usage-label">Free:</span>
+                  <span class="usage-value" id="storageFree">--</span>
+                </div>
               </div>
-              <div class="version-item">
-                <span class="version-label">Platform:</span>
-                <span class="version-value" id="clusterPlatform">--</span>
+              <div class="chart-label">Storage Used</div>
+            </div>
+          </div>
+          <div class="metric memory-utilization">
+            <div class="chart-container">
+              <canvas id="memoryChart"></canvas>
+              <div class="percentage-display" id="memoryPercentage">--%</div>
+              <div class="usage-details">
+                <div class="usage-item">
+                  <span class="usage-label">Used:</span>
+                  <span class="usage-value" id="memoryUsed">--</span>
+                </div>
+                <div class="usage-item">
+                  <span class="usage-label">Free:</span>
+                  <span class="usage-value" id="memoryFree">--</span>
+                </div>
+              </div>
+              <div class="chart-label">Memory Used</div>
+            </div>
+          </div>
+          <div class="metric cpu-utilization">
+            <div class="chart-container">
+              <canvas id="cpuChart"></canvas>
+              <div class="percentage-display" id="cpuPercentage">--%</div>
+              <div class="usage-details">
+                <div class="usage-item">
+                  <span class="usage-label">Used:</span>
+                  <span class="usage-value" id="cpuUsed">--</span>
+                </div>
+                <div class="usage-item">
+                  <span class="usage-label">Free:</span>
+                  <span class="usage-value" id="cpuFree">--</span>
+                </div>
+              </div>
+              <div class="chart-label">CPU Used</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="auto-refresh">
+          <input type="checkbox" id="autoRefreshToggle">
+          <label for="autoRefreshToggle">Auto-refresh every 5 seconds</label>
+        </div>
+      </section>
+      <!-- Cluster Metrics Section -->
+      <section class="cluster-section">
+        <h2>Cluster Metrics</h2>
+        <div class="cluster-overview">
+          <div class="cluster-info">
+            <div class="cluster-version">
+              <h3>📋 Cluster Version</h3>
+              <div class="version-details">
+                <div class="version-item">
+                  <span class="version-label">Version:</span>
+                  <span class="version-value" id="clusterVersion">--</span>
+                </div>
+                <div class="version-item">
+                  <span class="version-label">Platform:</span>
+                  <span class="version-value" id="clusterPlatform">--</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="cluster-stats">
+              <div class="stat-card">
+                <div class="stat-icon">🖥️</div>
+                <div class="stat-content">
+                  <div class="stat-number" id="totalNodes">--</div>
+                  <div class="stat-label">Total Nodes</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-content">
+                  <div class="stat-number" id="readyNodes">--</div>
+                  <div class="stat-label">Ready Nodes</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">📦</div>
+                <div class="stat-content">
+                  <div class="stat-number" id="totalPods">--</div>
+                  <div class="stat-label">Total Pods</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">🟢</div>
+                <div class="stat-content">
+                  <div class="stat-number" id="runningPods">--</div>
+                  <div class="stat-label">Running Pods</div>
+                </div>
               </div>
             </div>
           </div>
           
-          <div class="cluster-stats">
-            <div class="stat-card">
-              <div class="stat-icon">🖥️</div>
-              <div class="stat-content">
-                <div class="stat-number" id="totalNodes">--</div>
-                <div class="stat-label">Total Nodes</div>
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon">✅</div>
-              <div class="stat-content">
-                <div class="stat-number" id="readyNodes">--</div>
-                <div class="stat-label">Ready Nodes</div>
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon">📦</div>
-              <div class="stat-content">
-                <div class="stat-number" id="totalPods">--</div>
-                <div class="stat-label">Total Pods</div>
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon">🟢</div>
-              <div class="stat-content">
-                <div class="stat-number" id="runningPods">--</div>
-                <div class="stat-label">Running Pods</div>
-              </div>
-            </div>
+          <div class="nodes-table-container">
+            <h3>🖥️ Node Details</h3>
+            <table class="nodes-table">
+              <thead>
+                <tr>
+                  <th>Node Name</th>
+                  <th>Status</th>
+                  <th>Architecture</th>
+                  <th>OS</th>
+                  <th>Kubelet Version</th>
+                  <th>CPU Capacity (cores)</th>
+                  <th>Memory Capacity (MiB)</th>
+                  <th>Pod Capacity (pods)</th>
+                </tr>
+              </thead>
+              <tbody id="nodesTableBody">
+                <tr>
+                  <td colspan="8" class="loading-row">Loading nodes...</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-        </div>
-        
-        <div class="nodes-table-container">
-          <h3>🖥️ Node Details</h3>
-          <table class="nodes-table">
-            <thead>
-              <tr>
-                <th>Node Name</th>
-                <th>Status</th>
-                <th>Architecture</th>
-                <th>OS</th>
-                <th>Kubelet Version</th>
-                <th>CPU Capacity</th>
-                <th>Memory Capacity</th>
-                <th>Pod Capacity</th>
-              </tr>
-            </thead>
-            <tbody id="nodesTableBody">
-              <tr>
-                <td colspan="8" class="loading-row">Loading nodes...</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- Kubernetes Operations Section -->
-    <section class="kubernetes-section">
-      <h2>Kubernetes Cluster</h2>
-      
-      <!-- Namespace Selector -->
-      <div class="namespace-selector">
-        <label for="namespace-dropdown">Select Namespace:</label>
-        <select id="namespace-dropdown">
-          <option value="">Loading namespaces...</option>
-        </select>
-      </div>
-
-      <!-- Cluster Resources -->
-      <div class="resource-info">
-        <div class="deployments">
-          <span class="count">--</span>
-          <p>Deployments</p>
-        </div>
-        <div class="pods-running">
-          <span class="count">--</span>
-          <p>Pods Running</p>
-        </div>
-        <div class="services-running">
-          <span class="count">--</span>
-          <p>Services</p>
-        </div>
-      </div>
-
-      <!-- Services Section -->
-      <div class="services-section">
-        <h3>🔗 Services</h3>
-        <div id="servicesList" class="services-list">
-          <div class="loading">Loading services...</div>
-        </div>
-      </div>
-
-      <!-- Pod Health Section -->
-      <div class="pod-health-section">
-        <div class="section-header">
-          <h3>🏥 Pod Health & Restart Tracking</h3>
-          <div class="health-filters">
-            <select id="statusFilter" class="status-filter">
-              <option value="all">All Pods</option>
-              <option value="running">Running</option>
-              <option value="pending">Pending</option>
-              <option value="failed">Failed</option>
-              <option value="unhealthy">Unhealthy</option>
-              <option value="crashloopbackoff">CrashLoopBackOff</option>
-            </select>
-            <button id="refreshPods" class="refresh-btn">Refresh</button>
-          </div>
-        </div>
-        
-        <div class="pod-stats">
-          <div class="stat-item">
-            <span class="stat-label">Total Pods:</span>
-            <span class="stat-value" id="totalPods">--</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">Healthy:</span>
-            <span class="stat-value healthy" id="healthyPods">--</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">Unhealthy:</span>
-            <span class="stat-value unhealthy" id="unhealthyPods">--</span>
-          </div>
-        </div>
-
-        <div class="pod-table-container">
-          <table class="pod-table">
-            <thead>
-              <tr>
-                <th>Pod Name</th>
-                <th>Status</th>
-                <th>Restarts</th>
-                <th>Uptime</th>
-                <th>IP Address</th>
-                <th>Ready</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="podTableBody">
-              <tr>
-                <td colspan="7" class="loading-row">Loading pods...</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Live Event Stream Section -->
-      <section class="events-section">
-        <div class="section-header">
-          <h3>📡 Live Event Stream</h3>
-          <div class="event-filters">
-            <select id="eventTypeFilter" class="event-filter">
-              <option value="all">All Types</option>
-              <option value="normal">Normal</option>
-              <option value="warning">Warning</option>
-            </select>
-            <select id="resourceKindFilter" class="event-filter">
-              <option value="all">All Resources</option>
-              <option value="pod">Pod</option>
-              <option value="deployment">Deployment</option>
-              <option value="replicaset">ReplicaSet</option>
-            </select>
-            <input type="text" id="eventSearchInput" class="event-search" placeholder="Search events...">
-            <button id="refreshEvents" class="refresh-btn">Refresh</button>
-          </div>
-        </div>
-        
-        <div class="event-stats">
-          <div class="stat-item">
-            <span class="stat-label">Total Events:</span>
-            <span class="stat-value" id="totalEvents">--</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">Warnings:</span>
-            <span class="stat-value warning" id="warningEvents">--</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">Normal:</span>
-            <span class="stat-value normal" id="normalEvents">--</span>
-          </div>
-        </div>
-
-        <div class="event-table-container">
-          <table class="event-table">
-            <thead>
-              <tr>
-                <th>Timestamp</th>
-                <th>Type</th>
-                <th>Resource</th>
-                <th>Reason</th>
-                <th>Message</th>
-                <th>Count</th>
-              </tr>
-            </thead>
-            <tbody id="eventTableBody">
-              <tr>
-                <td colspan="6" class="loading-row">Loading events...</td>
-              </tr>
-            </tbody>
-          </table>
         </div>
       </section>
     </section>
 
-    <!-- Security Scanning Section -->
-    <section class="security-section">
-      <h2>Security Scanner</h2>
-      
-      <form id="scanForm">
-        <label for="imageInput">Docker Image Name:</label>
-        <input type="text" id="imageInput" name="imageInput" placeholder="e.g. nginx:latest, ubuntu:20.04">
-        <button type="submit">Scan Image</button>
-      </form>
+    <!-- K8s Cluster Page -->
+    <section id="page-k8s" class="page-section" style="display:none;">
+      <section class="kubernetes-section">
+        <h2>Kubernetes Cluster</h2>
+        
+        <!-- Namespace Selector -->
+        <div class="namespace-selector">
+          <label for="namespace-dropdown">Select Namespace:</label>
+          <select id="namespace-dropdown">
+            <option value="">Loading namespaces...</option>
+          </select>
+        </div>
 
-      <div class="scan-results">
-        <h3>Scan Results</h3>
-        <pre id="scanResults">{}</pre>
-        <div id="vulnTableContainer"></div>
-        <button id="exportReportBtn" class="refresh-btn" style="margin-top: 1rem; display: none;">Export Report</button>
-      </div>
+        <!-- Cluster Resources -->
+        <div class="resource-info">
+          <div class="deployments">
+            <span class="count">--</span>
+            <p>Deployments</p>
+          </div>
+          <div class="pods-running">
+            <span class="count">--</span>
+            <p>Pods Running</p>
+          </div>
+          <div class="services-running">
+            <span class="count">--</span>
+            <p>Services</p>
+          </div>
+        </div>
+
+        <!-- Services Section -->
+        <div class="services-section">
+          <h3>🔗 Services</h3>
+          <div id="servicesList" class="services-list">
+            <div class="loading">Loading services...</div>
+          </div>
+        </div>
+
+        <!-- Pod Health Section -->
+        <div class="pod-health-section">
+          <div class="section-header">
+            <h3>🏥 Pod Health & Restart Tracking</h3>
+            <div class="health-filters">
+              <select id="statusFilter" class="status-filter">
+                <option value="all">All Pods</option>
+                <option value="running">Running</option>
+                <option value="pending">Pending</option>
+                <option value="failed">Failed</option>
+                <option value="unhealthy">Unhealthy</option>
+                <option value="crashloopbackoff">CrashLoopBackOff</option>
+              </select>
+              <button id="refreshPods" class="refresh-btn">Refresh</button>
+            </div>
+          </div>
+          
+          <div class="pod-stats">
+            <div class="stat-item">
+              <span class="stat-label">Total Pods:</span>
+              <span class="stat-value" id="totalPods">--</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Healthy:</span>
+              <span class="stat-value healthy" id="healthyPods">--</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Unhealthy:</span>
+              <span class="stat-value unhealthy" id="unhealthyPods">--</span>
+            </div>
+          </div>
+
+          <div class="pod-table-container">
+            <table class="pod-table">
+              <thead>
+                <tr>
+                  <th>Pod Name</th>
+                  <th>Status</th>
+                  <th>Restarts</th>
+                  <th>Uptime</th>
+                  <th>IP Address</th>
+                  <th>Ready</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="podTableBody">
+                <tr>
+                  <td colspan="7" class="loading-row">Loading pods...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Live Event Stream Section -->
+        <section class="events-section">
+          <div class="section-header">
+            <h3>📡 Live Event Stream</h3>
+            <div class="event-filters">
+              <select id="eventTypeFilter" class="event-filter">
+                <option value="all">All Types</option>
+                <option value="normal">Normal</option>
+                <option value="warning">Warning</option>
+              </select>
+              <select id="resourceKindFilter" class="event-filter">
+                <option value="all">All Resources</option>
+                <option value="pod">Pod</option>
+                <option value="deployment">Deployment</option>
+                <option value="replicaset">ReplicaSet</option>
+              </select>
+              <input type="text" id="eventSearchInput" class="event-search" placeholder="Search events...">
+              <button id="refreshEvents" class="refresh-btn">Refresh</button>
+            </div>
+          </div>
+          
+          <div class="event-stats">
+            <div class="stat-item">
+              <span class="stat-label">Total Events:</span>
+              <span class="stat-value" id="totalEvents">--</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Warnings:</span>
+              <span class="stat-value warning" id="warningEvents">--</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Normal:</span>
+              <span class="stat-value normal" id="normalEvents">--</span>
+            </div>
+          </div>
+
+          <div class="event-table-container">
+            <table class="event-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Type</th>
+                  <th>Resource</th>
+                  <th>Reason</th>
+                  <th>Message</th>
+                  <th>Count</th>
+                </tr>
+              </thead>
+              <tbody id="eventTableBody">
+                <tr>
+                  <td colspan="6" class="loading-row">Loading events...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </section>
+
+    <!-- Security Scanner Page -->
+    <section id="page-security" class="page-section" style="display:none;">
+      <section class="security-section">
+        <h2>Security Scanner</h2>
+        
+        <form id="scanForm">
+          <label for="imageInput">Docker Image Name:</label>
+          <input type="text" id="imageInput" name="imageInput" placeholder="e.g. nginx:latest, ubuntu:20.04">
+          <button type="submit">Scan Image</button>
+        </form>
+
+        <div class="scan-results">
+          <h3>Scan Results</h3>
+          <pre id="scanResults">{}</pre>
+          <div id="vulnTableContainer"></div>
+          <button id="exportReportBtn" class="refresh-btn" style="margin-top: 1rem; display: none;">Export Report</button>
+        </div>
+      </section>
     </section>
   </main>
 </div>
