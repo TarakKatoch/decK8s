@@ -1,32 +1,30 @@
 # decK8s - Kubernetes Dashboard & Security Scanner
 
-## 👋 About This Project
+## About This Project
 I built **decK8s** to showcase my ability to design, implement, and deliver a modern, full-stack Kubernetes dashboard from scratch. This project demonstrates my skills in backend API development, frontend engineering, cloud-native tooling, and user-centric design. **decK8s is designed for monitoring and managing a single Kubernetes cluster at a time, making it perfect for local, development, or single-production cluster environments.**
 
-## 🌟 Why decK8s Matters
+## Why decK8s Matters
 - **End-to-End Solution:** Designed, coded, and styled every part of this dashboard myself.
 - **DevOps Mindset:** Combines cluster monitoring, security, and usability in one tool.
 - **Professional UI/UX:** Clean, modern, and responsive interface with advanced features.
 - **Real-World Impact:** Solves real problems for teams running Kubernetes in production or development.
 
-## 🚀 Features
+## Features
 - **Single-Cluster Focus:** All monitoring and management is for one Kubernetes cluster at a time (local, dev, or production).
 - **System & Cluster Metrics:** Real-time stats for both host and Kubernetes nodes/pods.
 ![Images](/Images/Screenshot%202025-06-19%20225456.png)
 ![Images](/Images/Screenshot%202025-06-19%20225525.png)
 
 - **Service Discovery:** Visual mapping of services to pods, with interactive details.
-![Images](/Images/Screenshot%202025-06-19%20233200.png)
-
 - **Pod Health Tracking:** Table with status, restarts, uptime, and filters.
-![Images](/Images/Screenshot%202025-06-19%20233227.png)
-
 - **Live Event Stream:** Real-time Kubernetes events with advanced filtering and search.
+![Images](/Images/Screenshot%202025-06-19%20233200.png)
+![Images](/Images/Screenshot%202025-06-19%20233227.png)
 ![Images](/Images/Screenshot%202025-06-19%20233251.png)
 
 - **Security Scanner:** Trivy-powered image scanning, user-friendly vulnerability table, exportable reports.
-![Images](/Images/Screenshot%202025-06-19%20233412.png
-![Images](/Images/Screenshot%202025-06-19%20233509.png))
+![Images](/Images/Screenshot%202025-06-19%20233412.png)
+![Images](/Images/Screenshot%202025-06-19%20233509.png)
 
 - **Modern UI:** Glassmorphism tabs, smooth notifications, responsive layout, and particle background.
 
@@ -49,7 +47,7 @@ decK8s/
 └── docs/                  # (Optional) Additional documentation
 ```
 
-## 🗂️ File Explanations
+## File Explanations
 - **README.md**: This documentation file.
 - **systeminfo.py**: Flask server providing REST API endpoints for system info, Kubernetes data, Trivy scanning, and event streaming.
 - **dashboardindex.html**: Main HTML file for the dashboard UI, including all page sections.
@@ -58,7 +56,7 @@ decK8s/
 - **requirements.txt**: Lists required Python packages (Flask, kubernetes, psutil, etc).
 - **docs/**: (Optional) Folder for extra documentation or screenshots.
 
-## ⚡ Setup Instructions
+## Setup Instructions
 ### 1. **Install Dependencies**
 - **Python 3.8+**
 - **pip** (Python package manager)
@@ -86,7 +84,7 @@ python systeminfo.py
 ```
 - Open your browser to [http://localhost:5000](http://localhost:5000)
 
-## 🔮 Future Enhancements
+## Future Enhancements
 - **Multi-cluster support** (monitor multiple clusters)
 - **Role-based access control** (user authentication/permissions)
 - **Pod log viewer** (real-time logs in dashboard)
@@ -97,5 +95,4 @@ python systeminfo.py
 - **Export event stream to CSV/JSON**
 - **Dark mode toggle**
 
----
-**If you're looking for a developer who can deliver robust, user-friendly, and production-ready cloud-native tools—let's connect!**
+ 
