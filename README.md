@@ -33,14 +33,14 @@ I built **decK8s** to showcase my ability to design, implement, and deliver a mo
 
 - **Modern UI:** Glassmorphism tabs, smooth notifications, responsive layout, and particle background.
 
-## 🛠️ Tech Stack
+## Tech Stack
 - **Frontend:** HTML5, CSS3 (custom), JavaScript (vanilla)
 - **Backend:** Python 3, Flask
 - **Kubernetes API:** Official Python client
 - **Security:** Trivy (Aqua Security)
 - **Visualization:** Chart.js, Particle.js
 
-## 📁 Project Structure
+## Project Structure
 ```
 decK8s/
 ├── README.md              # Project documentation
@@ -53,13 +53,12 @@ decK8s/
 ```
 
 ## File Explanations
-- **README.md**: This documentation file.
 - **systeminfo.py**: Flask server providing REST API endpoints for system info, Kubernetes data, Trivy scanning, and event streaming.
 - **dashboardindex.html**: Main HTML file for the dashboard UI, including all page sections.
 - **styles.css**: Custom CSS for layout, glassmorphism tabs, tables, notifications, and responsive design.
 - **app.js**: Handles data fetching, tab navigation, rendering, notifications, and all interactivity.
 - **requirements.txt**: Lists required Python packages (Flask, kubernetes, psutil, etc).
-- **docs/**: (Optional) Folder for extra documentation or screenshots.
+
 
 ## Setup Instructions
 ### 1. **Install Dependencies**
