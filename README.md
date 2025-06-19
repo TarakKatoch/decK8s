@@ -12,21 +12,21 @@ I built **decK8s** to showcase my ability to design, implement, and deliver a mo
 ## 🚀 Features
 - **Single-Cluster Focus:** All monitoring and management is for one Kubernetes cluster at a time (local, dev, or production).
 - **System & Cluster Metrics:** Real-time stats for both host and Kubernetes nodes/pods.
-![Images](/images/Screenshot%202025-06-19%20225456.png)
-![Images](/images/Screenshot%202025-06-19%20225525.png)
+![Images](/Images/Screenshot%202025-06-19%20225456.png)
+![Images](/Images/Screenshot%202025-06-19%20225525.png)
 
 - **Service Discovery:** Visual mapping of services to pods, with interactive details.
-![Images](/images/Screenshot%202025-06-19%20233200.png)
+![Images](/Images/Screenshot%202025-06-19%20233200.png)
 
 - **Pod Health Tracking:** Table with status, restarts, uptime, and filters.
-![Images](/images/Screenshot%202025-06-19%20233227.png)
+![Images](/Images/Screenshot%202025-06-19%20233227.png)
 
 - **Live Event Stream:** Real-time Kubernetes events with advanced filtering and search.
-![Images](/images/Screenshot%202025-06-19%20233251.png)
+![Images](/Images/Screenshot%202025-06-19%20233251.png)
 
 - **Security Scanner:** Trivy-powered image scanning, user-friendly vulnerability table, exportable reports.
-![Images](/images/Screenshot%202025-06-19%20233412.png
-![Images](/images/Screenshot%202025-06-19%20233509.png))
+![Images](/Images/Screenshot%202025-06-19%20233412.png
+![Images](/Images/Screenshot%202025-06-19%20233509.png))
 
 - **Modern UI:** Glassmorphism tabs, smooth notifications, responsive layout, and particle background.
 
