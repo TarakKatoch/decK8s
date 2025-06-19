@@ -4,25 +4,30 @@
 I built **decK8s** to showcase my ability to design, implement, and deliver a modern, full-stack Kubernetes dashboard from scratch. This project demonstrates my skills in backend API development, frontend engineering, cloud-native tooling, and user-centric design. **decK8s is designed for monitoring and managing a single Kubernetes cluster at a time, making it perfect for local, development, or single-production cluster environments.**
 
 ## Why decK8s Matters
-- **End-to-End Solution:** Designed, coded, and styled every part of this dashboard myself.
-- **DevOps Mindset:** Combines cluster monitoring, security, and usability in one tool.
-- **Professional UI/UX:** Clean, modern, and responsive interface with advanced features.
-- **Real-World Impact:** Solves real problems for teams running Kubernetes in production or development.
+- **DevOps & SRE Friendly:** decK8s provides a unified dashboard for monitoring, troubleshooting, and securing Kubernetes environments—empowering DevOps engineers and SREs to quickly identify issues, optimize resources, and maintain cluster health.
+- **Developer Productivity:** Developers can visually track deployments, pod health, and service mappings, making it easier to debug, test, and iterate on cloud-native applications.
+- **Security Built-In:** Integrated vulnerability scanning ensures images are production-ready and secure before deployment, reducing risk and compliance headaches.
+- **Single Pane of Glass:** Combines system metrics, cluster insights, event streaming, and security in one place—eliminating the need to juggle multiple tools or CLIs.
+- **Real-World Impact:** decK8s is ideal for local development, CI/CD pipelines, and production clusters—helping teams move faster, catch problems early, and deliver reliable software.
+- **Professional UI/UX:** Clean, modern, and responsive interface with advanced features, making cluster management approachable for both new and experienced users.
 
 ## Features
 - **Single-Cluster Focus:** All monitoring and management is for one Kubernetes cluster at a time (local, dev, or production).
 - **System & Cluster Metrics:** Real-time stats for both host and Kubernetes nodes/pods.
+
 ![Images](/Images/Screenshot%202025-06-19%20225456.png)
 ![Images](/Images/Screenshot%202025-06-19%20225525.png)
 
 - **Service Discovery:** Visual mapping of services to pods, with interactive details.
 - **Pod Health Tracking:** Table with status, restarts, uptime, and filters.
 - **Live Event Stream:** Real-time Kubernetes events with advanced filtering and search.
+
 ![Images](/Images/Screenshot%202025-06-19%20233200.png)
 ![Images](/Images/Screenshot%202025-06-19%20233227.png)
 ![Images](/Images/Screenshot%202025-06-19%20233251.png)
 
 - **Security Scanner:** Trivy-powered image scanning, user-friendly vulnerability table, exportable reports.
+
 ![Images](/Images/Screenshot%202025-06-19%20233412.png)
 ![Images](/Images/Screenshot%202025-06-19%20233509.png)
 
