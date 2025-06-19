@@ -20,7 +20,7 @@
 <div id="particles-js"></div>
 
 <div class="dashboard">
-  <header>
+<header>
     <nav class="main-nav">
       <div class="nav-logo"><span style="color:#ffffff;">dec</span><span style="color:#000000;">K8s</span></div>
       <ul class="nav-tabs">
@@ -29,18 +29,18 @@
         <li class="nav-tab" id="tab-security">Security Scanner</li>
       </ul>
     </nav>
-  </header>
+</header>
 
   <div id="notificationContainer"></div>
 
   <main>
     <!-- Metrics Page -->
     <section id="page-metrics" class="page-section">
-      <!-- System Metrics Section -->
-      <section class="top-section">
-        <h2>System Metrics</h2>
+  <!-- System Metrics Section -->
+  <section class="top-section">
+    <h2>System Metrics</h2>
         <div class="metrics-grid">
-          <div class="metric storage-used">
+    <div class="metric storage-used">
             <div class="chart-container">
               <canvas id="storageChart"></canvas>
               <div class="percentage-display" id="storagePercentage">--%</div>
@@ -56,8 +56,8 @@
               </div>
               <div class="chart-label">Storage Used</div>
             </div>
-          </div>
-          <div class="metric memory-utilization">
+    </div>
+    <div class="metric memory-utilization">
             <div class="chart-container">
               <canvas id="memoryChart"></canvas>
               <div class="percentage-display" id="memoryPercentage">--%</div>
@@ -73,8 +73,8 @@
               </div>
               <div class="chart-label">Memory Used</div>
             </div>
-          </div>
-          <div class="metric cpu-utilization">
+    </div>
+    <div class="metric cpu-utilization">
             <div class="chart-container">
               <canvas id="cpuChart"></canvas>
               <div class="percentage-display" id="cpuPercentage">--%</div>
@@ -91,13 +91,13 @@
               <div class="chart-label">CPU Used</div>
             </div>
           </div>
-        </div>
+    </div>
         
-        <div class="auto-refresh">
+    <div class="auto-refresh">
           <input type="checkbox" id="autoRefreshToggle">
           <label for="autoRefreshToggle">Auto-refresh every 5 seconds</label>
-        </div>
-      </section>
+    </div>
+  </section>
       <!-- Cluster Metrics Section -->
       <section class="cluster-section">
         <h2>Cluster Metrics</h2>
@@ -181,28 +181,28 @@
         <h2>Kubernetes Cluster</h2>
         
         <!-- Namespace Selector -->
-        <div class="namespace-selector">
-          <label for="namespace-dropdown">Select Namespace:</label>
+    <div class="namespace-selector">
+      <label for="namespace-dropdown">Select Namespace:</label>
           <select id="namespace-dropdown">
             <option value="">Loading namespaces...</option>
           </select>
-        </div>
+    </div>
 
         <!-- Cluster Resources -->
-        <div class="resource-info">
-          <div class="deployments">
-            <span class="count">--</span>
-            <p>Deployments</p>
-          </div>
-          <div class="pods-running">
-            <span class="count">--</span>
-            <p>Pods Running</p>
-          </div>
-          <div class="services-running">
-            <span class="count">--</span>
-            <p>Services</p>
-          </div>
-        </div>
+    <div class="resource-info">
+      <div class="deployments">
+        <span class="count">--</span>
+        <p>Deployments</p>
+      </div>
+      <div class="pods-running">
+        <span class="count">--</span>
+        <p>Pods Running</p>
+      </div>
+      <div class="services-running">
+        <span class="count">--</span>
+        <p>Services</p>
+      </div>
+    </div>
 
         <!-- Services Section -->
         <div class="services-section">
@@ -330,21 +330,21 @@
       <section class="security-section">
         <h2>Security Scanner</h2>
         
-        <form id="scanForm">
+    <form id="scanForm">
           <label for="imageInput">Docker Image Name:</label>
           <input type="text" id="imageInput" name="imageInput" placeholder="e.g. nginx:latest, ubuntu:20.04">
-          <button type="submit">Scan Image</button>
-        </form>
+      <button type="submit">Scan Image</button>
+    </form>
 
         <div class="scan-results">
-          <h3>Scan Results</h3>
-          <pre id="scanResults">{}</pre>
-          <div id="vulnTableContainer"></div>
+    <h3>Scan Results</h3>
+    <pre id="scanResults">{}</pre>
           <button id="exportReportBtn" class="refresh-btn" style="margin-top: 1rem; display: none;">Export Report</button>
+          <div id="vulnTableContainer"></div>
         </div>
       </section>
-    </section>
-  </main>
+  </section>
+</main>
 </div>
 
 <!-- Particle.js Configuration -->
