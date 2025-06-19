@@ -3,6 +3,8 @@
 ## About This Project
 I built **decK8s** to showcase my ability to design, implement, and deliver a modern, full-stack Kubernetes dashboard from scratch. This project demonstrates my skills in backend API development, frontend engineering, cloud-native tooling, and user-centric design. **decK8s is designed for monitoring and managing a single Kubernetes cluster at a time, making it perfect for local, development, or single-production cluster environments.**
 
+> **Note:** decK8s works with **any Kubernetes cluster** that your machine can access via `kubectl`—not just Docker Desktop. You can use it with Minikube, Kind, MicroK8s, or any cloud/remote cluster as long as your kubeconfig is set up. Docker Desktop is mentioned for convenience, but decK8s is not limited to Docker.
+
 ## Why decK8s Matters
 - **DevOps & SRE Friendly:** decK8s provides a unified dashboard for monitoring, troubleshooting, and securing Kubernetes environments—empowering DevOps engineers and SREs to quickly identify issues, optimize resources, and maintain cluster health.
 - **Developer Productivity:** Developers can visually track deployments, pod health, and service mappings, making it easier to debug, test, and iterate on cloud-native applications.
@@ -64,7 +66,7 @@ decK8s/
 ### 1. **Install Dependencies**
 - **Python 3.8+**
 - **pip** (Python package manager)
-- **Docker Desktop** (with Kubernetes enabled)
+- **A Kubernetes cluster** (Docker Desktop, Minikube, Kind, MicroK8s, or any kubeconfig-accessible cluster)
 - **kubectl** (Kubernetes CLI)
 - **Trivy** (security scanner)
 
@@ -78,9 +80,15 @@ pip install -r requirements.txt
 - macOS: `brew install trivy`
 - Linux: See [Trivy install docs](https://aquasecurity.github.io/trivy/v0.18.3/installation/)
 
-### 2. **Docker Desktop Settings**
-- Enable Kubernetes: Docker Desktop > Settings > Kubernetes > Enable Kubernetes
-- Resource Allocation: At least 4GB RAM, 2 CPUs, 20GB disk (Settings > Resources)
+### 2. **Kubernetes Cluster Setup**
+- You can use Docker Desktop, Minikube, Kind, MicroK8s, or any cloud/remote cluster.
+- Make sure your `kubectl` context is set to the cluster you want to monitor:
+  ```bash
+  kubectl config use-context <your-cluster-context>
+  ```
+- For Docker Desktop: Enable Kubernetes via Docker Desktop > Settings > Kubernetes > Enable Kubernetes
+- For other clusters: Follow their respective setup instructions.
+- Resource Allocation: At least 4GB RAM, 2 CPUs, 20GB disk recommended for local clusters.
 
 ### 3. **Start the Dashboard**
 ```bash
